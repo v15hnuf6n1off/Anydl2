@@ -17,6 +17,8 @@
   "success_url": "https://telegram.dog/AnyDLBot",
   "website": "https://github.com/SpEcHiDe/AnyDLBot",
   "repository": "https://github.com/SpEcHiDe/AnyDLBot",
+  "stack":"container",
+  "image":"Dockerfile",
   "env": {
     "ENV": {
       "description": "Setting this to ANYTHING will enable VARs when in ENV mode",
@@ -57,11 +59,6 @@
   },
   "addons": [
   ],
-  "buildpacks": [{
-    "url": "https://github.com/jonathanong/heroku-buildpack-ffmpeg-latest"
-  }, {
-    "url": "heroku/python"
-  }],
   "formation": {
     "worker": {
       "quantity": 1,
