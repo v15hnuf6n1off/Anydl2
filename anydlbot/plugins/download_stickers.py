@@ -6,10 +6,11 @@
 import logging
 import os
 import time
+
 from PIL import Image
 from pyrogram import (
     Client,
-    Filters
+    filters
 )
 from anydlbot import (
     AUTH_USERS,
@@ -27,7 +28,7 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
-@Client.on_message(Filters.sticker)
+@Client.on_message(filters.sticker)
 async def DownloadStickersBot(bot, update):
     if update.from_user.id not in AUTH_USERS:
         await update.delete()

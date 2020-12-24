@@ -5,13 +5,17 @@
 # the logging things
 import logging
 import json
+
 from pyrogram import (
     Client,
-    Filters,
-    InlineKeyboardButton,
-    InlineKeyboardMarkup,
-    Message
+    filters
 )
+from pyrogram.types import (
+    Message,
+    InlineKeyboardMarkup,
+    InlineKeyboardButton
+)
+
 from anydlbot import (
     AUTH_USERS,
     HTTP_PROXY,
@@ -34,7 +38,7 @@ LOGGER = logging.getLogger(__name__)
 logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
-@Client.on_message(Filters.regex(pattern=".*http.*"))
+@Client.on_message(filters.regex(pattern=".*http.*"))
 async def echo(bot, update: Message):
     if update.from_user.id not in AUTH_USERS:
         await update.delete()

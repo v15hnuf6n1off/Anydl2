@@ -9,16 +9,19 @@ import os
 import shutil
 import time
 from datetime import datetime
+
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 # https://stackoverflow.com/a/37631799/4723940
 from PIL import Image
-from pyrogram import InputMediaPhoto
+from pyrogram.types import InputMediaPhoto
+
 from anydlbot import (
     DOWNLOAD_LOCATION,
     TG_MAX_FILE_SIZE,
     HTTP_PROXY
 )
+
 from anydlbot.helper_funcs.display_progress import (
     progress_for_pyrogram,
     humanbytes

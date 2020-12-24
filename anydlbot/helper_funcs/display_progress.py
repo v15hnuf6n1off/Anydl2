@@ -4,7 +4,6 @@
 
 import math
 import time
-
 from anydlbot import (
     FINISHED_PROGRESS_STR,
     UN_FINISHED_PROGRESS_STR

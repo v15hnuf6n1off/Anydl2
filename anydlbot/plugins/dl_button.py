@@ -4,15 +4,18 @@
 
 # the logging things
 import logging
-import asyncio
-import aiohttp
+
 import os
 import time
 from datetime import datetime
+
+import asyncio
+import aiohttp
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
 # https://stackoverflow.com/a/37631799/4723940
 from PIL import Image
+
 from anydlbot import (
     DOWNLOAD_LOCATION,
     TG_MAX_FILE_SIZE,

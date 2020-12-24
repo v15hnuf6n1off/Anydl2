@@ -10,7 +10,7 @@ from translation import Translation
 
 from pyrogram import (
     Client,
-    Filters
+    filters
 )
 
 logging.basicConfig(
@@ -26,7 +26,7 @@ def GetExpiryDate(chat_id):
     return expires_at
 
 
-@Client.on_message(Filters.command(["help", "about"]))
+@Client.on_message(filters.command(["help", "about"]))
 async def help_user(bot, update):
     # LOGGER.info(update)
     await bot.send_message(
@@ -38,7 +38,7 @@ async def help_user(bot, update):
     )
 
 
-@Client.on_message(Filters.command(["me"]))
+@Client.on_message(filters.command(["me"]))
 async def get_me_info(bot, update):
     # LOGGER.info(update)
     chat_id = str(update.from_user.id)
@@ -56,7 +56,7 @@ async def get_me_info(bot, update):
     )
 
 
-@Client.on_message(Filters.command(["start"]))
+@Client.on_message(filters.command(["start"]))
 async def start(bot, update):
     # LOGGER.info(update)
     await bot.send_message(
@@ -66,7 +66,7 @@ async def start(bot, update):
     )
 
 
-@Client.on_message(Filters.command(["upgrade"]))
+@Client.on_message(filters.command(["upgrade"]))
 async def upgrade(bot, update):
     # LOGGER.info(update)
     await bot.send_message(
