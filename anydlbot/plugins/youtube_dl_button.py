@@ -27,10 +27,8 @@ async def youtube_dl_call_back(_, update):
     cb_data = update.data
     # youtube_dl extractors
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("|")
-    thumb_image_path = WORK_DIR + \
-        "/" + str(update.from_user.id) + ".jpg"
-    save_ytdl_json_path = WORK_DIR + \
-        "/" + str(update.from_user.id) + ".json"
+    thumb_image_path = os.path.join(WORK_DIR, str(update.from_user.id) + ".jpg")
+    save_ytdl_json_path = os.path.join(WORK_DIR, str(update.from_user.id) + ".json")
     try:
         with open(save_ytdl_json_path, "r", encoding="utf8") as f:
             response_json = json.load(f)

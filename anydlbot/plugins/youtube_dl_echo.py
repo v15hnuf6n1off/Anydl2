@@ -2,11 +2,12 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-
+import os
 import json
 
 from pyrogram import Client, filters
-from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+from pyrogram.types import Message, InlineKeyboardButton
+from pykeyboard import InlineKeyboard
 
 from anydlbot import AUTH_USERS, HTTP_PROXY, WORK_DIR, DEF_THUMB_NAIL_VID_S, LOGGER
 from anydlbot.helper_funcs.display_progress import humanbytes
@@ -80,7 +81,7 @@ async def echo(_, update: Message):
         with open(save_ytdl_json_path, "w", encoding="utf8") as outfile:
             json.dump(response_json, outfile, ensure_ascii=False)
         # logger.info(response_json)
-        inline_keyboard = []
+        ikeyboard = InlineKeyboard()
         duration = None
         if "duration" in response_json:
             duration = response_json["duration"]
@@ -97,139 +98,88 @@ async def echo(_, update: Message):
                 approx_file_size = ""
                 if "filesize" in formats:
                     approx_file_size = humanbytes(formats["filesize"])
-                cb_string_video = "{}|{}|{}".format(
-                    "video", format_id, format_ext)
-                cb_string_file = "{}|{}|{}".format(
-                    "file", format_id, format_ext)
+                cb_string_video = f"video|{format_id}|{format_ext}"
+                cb_string_file = f"file|{format_id}|{format_ext}"
                 if format_string and "audio only" not in format_string:
-                    ikeyboard = [
-                        InlineKeyboardButton(
-                            f"S {format_string} video  {format_ext} ",
-                            callback_data=(cb_string_video).encode("UTF-8")
-                        ),
-                        InlineKeyboardButton(
-                            f"D {format_string} video  {approx_file_size} ",
-                            callback_data=(cb_string_file).encode("UTF-8")
-                        )
-                    ]
+                    ikeyboard.row(
+                        InlineKeyboardButton(f"{format_string} Video {format_ext}", cb_string_video),
+                        InlineKeyboardButton(f"Document {approx_file_size}", cb_string_file)
+                    )
                 else:
                     # special weird case :\
-                    ikeyboard = [
-                        InlineKeyboardButton(
-                            "SVideo [" +
-                            "] ( " +
-                            approx_file_size + " )",
-                            callback_data=(cb_string_video).encode("UTF-8")
-                        ),
-                        InlineKeyboardButton(
-                            "DFile [" +
-                            "] ( " +
-                            approx_file_size + " )",
-                            callback_data=(cb_string_file).encode("UTF-8")
-                        )
-                    ]
-                inline_keyboard.append(ikeyboard)
+                    ikeyboard.row(
+                        InlineKeyboardButton(f"Video {approx_file_size}", cb_string_video),
+                        InlineKeyboardButton(f"Document {approx_file_size}", cb_string_file)
+                    )
             if duration is not None:
-                cb_string_64 = "{}|{}|{}".format("audio", "64k", "mp3")
-                cb_string_128 = "{}|{}|{}".format("audio", "128k", "mp3")
-                cb_string = "{}|{}|{}".format("audio", "320k", "mp3")
-                inline_keyboard.append([
-                    InlineKeyboardButton(
-                        "MP3 " + "(" + "64 kbps" + ")",
-                        callback_data=cb_string_64.encode("UTF-8")
-                    ),
-                    InlineKeyboardButton(
-                        "MP3 " + "(" + "128 kbps" + ")",
-                        callback_data=cb_string_128.encode("UTF-8")
-                    )
-                ])
-                inline_keyboard.append([
-                    InlineKeyboardButton(
-                        "MP3 " + "(" + "320 kbps" + ")",
-                        callback_data=cb_string.encode("UTF-8")
-                    )
-                ])
+                cb_string_64 = "audio|64k|mp3"
+                cb_string_128 = "audio|128k|mp3"
+                cb_string = "audio|320k|mp3"
+                ikeyboard.row(
+                    InlineKeyboardButton("MP3 (64 kbps)", cb_string_64),
+                    InlineKeyboardButton("MP3 (128 kbps)", cb_string_128)
+                )
+                ikeyboard.row(
+                    InlineKeyboardButton("MP3 (320 kbps)", cb_string)
+                )
         else:
             format_id = response_json["format_id"]
             format_ext = response_json["ext"]
-            cb_string_file = "{}|{}|{}".format(
-                "file", format_id, format_ext)
-            cb_string_video = "{}|{}|{}".format(
-                "video", format_id, format_ext)
-            inline_keyboard.append([
-                InlineKeyboardButton(
-                    "SVideo",
-                    callback_data=(cb_string_video).encode("UTF-8")
-                ),
-                InlineKeyboardButton(
-                    "DFile",
-                    callback_data=(cb_string_file).encode("UTF-8")
-                )
-            ])
-            cb_string_file = "{}={}={}".format(
-                "file", format_id, format_ext)
-            cb_string_video = "{}={}={}".format(
-                "video", format_id, format_ext)
-            inline_keyboard.append([
-                InlineKeyboardButton(
-                    "video",
-                    callback_data=(cb_string_video).encode("UTF-8")
-                ),
-                InlineKeyboardButton(
-                    "file",
-                    callback_data=(cb_string_file).encode("UTF-8")
-                )
-            ])
-        reply_markup = InlineKeyboardMarkup(inline_keyboard)
+            cb_string_file = f"file|{format_id}|{format_ext}"
+            cb_string_video = f"video|{format_id}|{format_ext}"
+            ikeyboard.row(
+                InlineKeyboardButton("Video", cb_string_video),
+                InlineKeyboardButton("Document", cb_string_file)
+            )
+            cb_string_file = f"file={format_id}={format_ext}"
+            cb_string_video = f"video={format_id}={format_ext}"
+            ikeyboard.row(
+                InlineKeyboardButton("video", cb_string_video),
+                InlineKeyboardButton("file", cb_string_file)
+            )
         # logger.info(reply_markup)
         thumbnail = DEF_THUMB_NAIL_VID_S
         thumbnail_image = DEF_THUMB_NAIL_VID_S
+        save_thumbnail = os.path.join(WORK_DIR, str(update.from_user.id) + ".jpg")
         if "thumbnail" in response_json:
             if response_json["thumbnail"] is not None:
                 thumbnail = response_json["thumbnail"]
                 thumbnail_image = response_json["thumbnail"]
-        thumb_image_path = DownLoadFile(
-            thumbnail_image,
-            WORK_DIR + "/" +
-            str(update.from_user.id) + ".jpg",
-            128,
-            None,  # bot,
-            Translation.DOWNLOAD_START,
-            update.message_id,
-            update.chat.id
-        )
+        if os.path.exists(save_thumbnail):
+            thumb_image_path = save_thumbnail
+        else:
+            thumb_image_path = DownLoadFile(
+                thumbnail_image,
+                save_thumbnail,
+                128,
+                None,  # bot,
+                Translation.DOWNLOAD_START,
+                update.message_id,
+                update.chat.id
+            )
         await update.reply_photo(
             photo=thumb_image_path,
             quote=True,
             caption=Translation.FORMAT_SELECTION.format(
                 thumbnail
             ) + "\n" + Translation.SET_CUSTOM_USERNAME_PASSWORD,
-            reply_markup=reply_markup,
+            reply_markup=ikeyboard,
             parse_mode="html"
         )
     else:
         # fallback for nonnumeric port a.k.a seedbox.io
-        inline_keyboard = []
-        cb_string_file = "{}={}={}".format(
-            "file", "LFO", "NONE")
-        cb_string_video = "{}={}={}".format(
-            "video", "OFL", "ENON")
-        inline_keyboard.append([
-            InlineKeyboardButton(
-                "SVideo",
-                callback_data=(cb_string_video).encode("UTF-8")
-            ),
-            InlineKeyboardButton(
-                "DFile",
-                callback_data=(cb_string_file).encode("UTF-8")
-            )
-        ])
-        reply_markup = InlineKeyboardMarkup(inline_keyboard)
+        ikeyboard = InlineKeyboard()
+        cb_string_file = "file=LFO=NONE"
+        cb_string_video = "video=OFL=ENON"
+        ikeyboard.row(
+            InlineKeyboardButton("Video", cb_string_video),
+            InlineKeyboardButton("Document", cb_string_file)
+        )
         await update.reply_photo(
             photo=DEF_THUMB_NAIL_VID_S,
             quote=True,
             caption=Translation.FORMAT_SELECTION.format(""),
-            reply_markup=reply_markup,
+            reply_markup=ikeyboard,
             parse_mode="html",
             reply_to_message_id=update.message_id
         )
