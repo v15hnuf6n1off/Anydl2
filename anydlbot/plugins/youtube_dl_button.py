@@ -2,8 +2,6 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
 import json
 import os
 import shutil
@@ -16,16 +14,8 @@ from hachoir.parser import createParser
 from PIL import Image
 from pyrogram.types import InputMediaPhoto
 
-from anydlbot import (
-    DOWNLOAD_LOCATION,
-    TG_MAX_FILE_SIZE,
-    HTTP_PROXY
-)
-
-from anydlbot.helper_funcs.display_progress import (
-    progress_for_pyrogram,
-    humanbytes
-)
+from anydlbot import WORK_DIR, TG_MAX_FILE_SIZE, HTTP_PROXY, LOGGER
+from anydlbot.helper_funcs.display_progress import progress_for_pyrogram, humanbytes
 from anydlbot.helper_funcs.help_Nekmo_ffmpeg import generate_screen_shots
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.helper_funcs.run_cmnd import run_shell_command
@@ -33,21 +23,13 @@ from anydlbot.helper_funcs.run_cmnd import run_shell_command
 from translation import Translation
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-
-
-async def youtube_dl_call_back(bot, update):
+async def youtube_dl_call_back(_, update):
     cb_data = update.data
     # youtube_dl extractors
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("|")
-    thumb_image_path = DOWNLOAD_LOCATION + \
+    thumb_image_path = WORK_DIR + \
         "/" + str(update.from_user.id) + ".jpg"
-    save_ytdl_json_path = DOWNLOAD_LOCATION + \
+    save_ytdl_json_path = WORK_DIR + \
         "/" + str(update.from_user.id) + ".json"
     try:
         with open(save_ytdl_json_path, "r", encoding="utf8") as f:
@@ -73,7 +55,7 @@ async def youtube_dl_call_back(bot, update):
         description = response_json["fulltitle"][0:1021]
         # escape Markdown and special characters
     tmp_directory_for_each_user = os.path.join(
-        DOWNLOAD_LOCATION,
+        WORK_DIR,
         str(update.from_user.id)
     )
     if not os.path.isdir(tmp_directory_for_each_user):
@@ -169,7 +151,8 @@ async def youtube_dl_call_back(bot, update):
                 )
                 LOGGER.info(images)
                 await update.message.edit_caption(
-                    caption=Translation.UPLOAD_START
+                    caption=f"Download took {time_taken_for_download} seconds.\n" +
+                            Translation.UPLOAD_START
                 )
                 # get the correct width, height, and duration
                 # for videos greater than 10MB
@@ -270,7 +253,7 @@ async def youtube_dl_call_back(bot, update):
                 media_album_p = []
                 if images is not None:
                     i = 0
-                    caption = "© @AnyDLBot"
+                    caption = f"© @AnyDLBot - Uploaded in {time_taken_for_upload} seconds"
                     for image in images:
                         if os.path.exists(image):
                             if i == 0:
@@ -297,6 +280,7 @@ async def youtube_dl_call_back(bot, update):
                 tmp_directory_for_each_user,
                 ignore_errors=True
             )
+            LOGGER.info("Cleared temporary folder")
             os.remove(thumb_image_path)
 
             await update.message.delete()

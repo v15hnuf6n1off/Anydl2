@@ -4,6 +4,16 @@
 
 import os
 
+from pyrogram import filters
+
+# the logging things
+import logging
+logging.basicConfig(
+    level=logging.DEBUG,
+    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+)
+logging.getLogger("pyrogram").setLevel(logging.WARNING)
+
 # the secret configuration specific things
 if bool(os.environ.get("ENV", False)):
     from anydlbot.sample_config import Config
@@ -12,11 +22,12 @@ else:
 
 
 # TODO: is there a better way?
-TG_BOT_TOKEN = Config.TG_BOT_TOKEN
+LOGGER = logging.getLogger(__name__)
+BOT_TOKEN = Config.BOT_TOKEN
 APP_ID = Config.APP_ID
 API_HASH = Config.API_HASH
-AUTH_USERS = Config.AUTH_USERS
-DOWNLOAD_LOCATION = Config.DOWNLOAD_LOCATION
+AUTH_USERS = filters.user(list(Config.AUTH_USERS))
+WORK_DIR = Config.WORK_DIR
 MAX_FILE_SIZE = Config.MAX_FILE_SIZE
 TG_MAX_FILE_SIZE = Config.TG_MAX_FILE_SIZE
 CHUNK_SIZE = Config.CHUNK_SIZE

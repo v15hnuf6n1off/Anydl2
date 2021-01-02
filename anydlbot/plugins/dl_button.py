@@ -2,9 +2,6 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
-
 import os
 import time
 from datetime import datetime
@@ -16,26 +13,11 @@ from hachoir.parser import createParser
 # https://stackoverflow.com/a/37631799/4723940
 from PIL import Image
 
-from anydlbot import (
-    DOWNLOAD_LOCATION,
-    TG_MAX_FILE_SIZE,
-    PROCESS_MAX_TIMEOUT,
-    CHUNK_SIZE
-)
-from anydlbot.helper_funcs.display_progress import (
-    progress_for_pyrogram, humanbytes, TimeFormatter
-)
+from anydlbot import WORK_DIR, TG_MAX_FILE_SIZE, PROCESS_MAX_TIMEOUT, CHUNK_SIZE, LOGGER
+from anydlbot.helper_funcs.display_progress import progress_for_pyrogram, humanbytes, TimeFormatter
 from anydlbot.helper_funcs.extract_link import get_link
 # the Strings used for this "thing"
 from translation import Translation
-
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
 
 async def ddl_call_back(bot, update):
@@ -43,7 +25,7 @@ async def ddl_call_back(bot, update):
     cb_data = update.data
     # youtube_dl extractors
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("=")
-    thumb_image_path = DOWNLOAD_LOCATION + \
+    thumb_image_path = WORK_DIR + \
         "/" + str(update.from_user.id) + ".jpg"
 
     youtube_dl_url, \
@@ -63,7 +45,7 @@ async def ddl_call_back(bot, update):
         message_id=update.message.message_id
     )
     tmp_directory_for_each_user = os.path.join(
-        DOWNLOAD_LOCATION,
+        WORK_DIR,
         str(update.from_user.id)
     )
     if not os.path.isdir(tmp_directory_for_each_user):

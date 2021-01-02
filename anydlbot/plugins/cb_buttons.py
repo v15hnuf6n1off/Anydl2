@@ -2,30 +2,17 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
-
 from pyrogram import Client
 from pyrogram.types import CallbackQuery
 
-from anydlbot import AUTH_USERS
+from anydlbot import AUTH_USERS, LOGGER
 from anydlbot.plugins.youtube_dl_button import youtube_dl_call_back
 from anydlbot.plugins.dl_button import ddl_call_back
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
 
-
-@Client.on_callback_query()
+@Client.on_callback_query(AUTH_USERS)
 async def button(bot, update: CallbackQuery):
-    if update.from_user.id not in AUTH_USERS:
-        await update.message.delete()
-        return
     # LOGGER.info(update)
     # NOTE: You should always answer,
     # but we want different conditionals to

@@ -2,16 +2,8 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
 import asyncio
 from typing import List
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
 
 
 async def run_shell_command(command_to_exec: List) -> (str, str):

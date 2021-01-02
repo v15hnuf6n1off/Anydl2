@@ -2,28 +2,16 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
-
 # the Strings used for this "thing"
 from translation import Translation
 
-from pyrogram import (
-    Client,
-    filters
-)
+from pyrogram import Client, filters
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
+from anydlbot import LOGGER
 
 
 def GetExpiryDate(chat_id):
-    expires_at = (str(chat_id), "Source Cloned User", "1970.01.01.12.00.00")
-    return expires_at
+    return (str(chat_id), "Source Cloned User", "1970.01.01.12.00.00")
 
 
 @Client.on_message(filters.command(["help", "about"]))

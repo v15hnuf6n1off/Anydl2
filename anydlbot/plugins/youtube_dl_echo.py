@@ -2,26 +2,13 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
+
 import json
 
-from pyrogram import (
-    Client,
-    filters
-)
-from pyrogram.types import (
-    Message,
-    InlineKeyboardMarkup,
-    InlineKeyboardButton
-)
+from pyrogram import Client, filters
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 
-from anydlbot import (
-    AUTH_USERS,
-    HTTP_PROXY,
-    DOWNLOAD_LOCATION,
-    DEF_THUMB_NAIL_VID_S
-)
+from anydlbot import AUTH_USERS, HTTP_PROXY, WORK_DIR, DEF_THUMB_NAIL_VID_S, LOGGER
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
 from anydlbot.helper_funcs.extract_link import get_link
@@ -29,20 +16,11 @@ from anydlbot.helper_funcs.run_cmnd import run_shell_command
 # the Strings used for this "thing"
 from translation import Translation
 
-
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
+rgx = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)"
 
 
-@Client.on_message(filters.regex(pattern=".*http.*"))
-async def echo(bot, update: Message):
-    if update.from_user.id not in AUTH_USERS:
-        await update.delete()
-        return
+@Client.on_message(filters.regex(rgx) & AUTH_USERS)
+async def echo(_, update: Message):
     # LOGGER.info(update)
     # await bot.send_chat_action(
     #     chat_id=update.chat.id,
@@ -97,7 +75,7 @@ async def echo(bot, update: Message):
         if "\n" in x_reponse:
             x_reponse, _ = x_reponse.split("\n")
         response_json = json.loads(x_reponse)
-        save_ytdl_json_path = DOWNLOAD_LOCATION + \
+        save_ytdl_json_path = WORK_DIR + \
             "/" + str(update.from_user.id) + ".json"
         with open(save_ytdl_json_path, "w", encoding="utf8") as outfile:
             json.dump(response_json, outfile, ensure_ascii=False)
@@ -112,6 +90,9 @@ async def echo(bot, update: Message):
                 format_string = formats.get("format_note")
                 if format_string is None:
                     format_string = formats.get("format")
+                # @SpEcHiDe/PublicLeech//helper_funcs/youtube_dl_extractor.py#L100
+                if "DASH" in format_string.upper():
+                    continue
                 format_ext = formats.get("ext")
                 approx_file_size = ""
                 if "filesize" in formats:
@@ -209,7 +190,7 @@ async def echo(bot, update: Message):
                 thumbnail_image = response_json["thumbnail"]
         thumb_image_path = DownLoadFile(
             thumbnail_image,
-            DOWNLOAD_LOCATION + "/" +
+            WORK_DIR + "/" +
             str(update.from_user.id) + ".jpg",
             128,
             None,  # bot,

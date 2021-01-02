@@ -2,43 +2,19 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-# the logging things
-import logging
 import os
 
-from pyrogram import (
-    Client,
-    filters
-)
+from pyrogram import Client, filters
 
-from anydlbot import (
-    AUTH_USERS,
-    DOWNLOAD_LOCATION
-)
+from anydlbot import AUTH_USERS, WORK_DIR, LOGGER
 # the Strings used for this "thing"
 from translation import Translation
 
 
-logging.basicConfig(
-    level=logging.DEBUG,
-    format="%(asctime)s - %(name)s - %(levelname)s - %(message)s"
-)
-LOGGER = logging.getLogger(__name__)
-logging.getLogger("pyrogram").setLevel(logging.WARNING)
-
-
-@Client.on_message(filters.photo)
+@Client.on_message(filters.photo & AUTH_USERS)
 async def save_photo(bot, update):
-    if update.from_user.id not in AUTH_USERS:
-        await bot.delete_messages(
-            chat_id=update.chat.id,
-            message_ids=update.message_id,
-            revoke=True
-        )
-        return
-    # received single photo
     download_location = os.path.join(
-        DOWNLOAD_LOCATION,
+        WORK_DIR,
         str(update.from_user.id) + ".jpg"
     )
     await bot.download_media(
@@ -52,17 +28,10 @@ async def save_photo(bot, update):
     )
 
 
-@Client.on_message(filters.command(["deletethumbnail"]))
+@Client.on_message(filters.command(["deletethumbnail"]) & AUTH_USERS)
 async def delete_thumbnail(bot, update):
-    if update.from_user.id not in AUTH_USERS:
-        await bot.delete_messages(
-            chat_id=update.chat.id,
-            message_ids=update.message_id,
-            revoke=True
-        )
-        return
     download_location = os.path.join(
-        DOWNLOAD_LOCATION,
+        WORK_DIR,
         str(update.from_user.id)
     )
     try:
