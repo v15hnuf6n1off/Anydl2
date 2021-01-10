@@ -243,11 +243,11 @@ File Size: {}""".format(url, humanbytes(total_length))
                 if round(diff % 5.00) == 0 or downloaded == total_length:
                     # percentage = downloaded * 100 / total_length
                     speed = downloaded / diff
-                    elapsed_time = round(diff) * 1000
+                    # elapsed_time = round(diff) * 1000
                     time_to_completion = round(
                         (total_length - downloaded) / speed
                     ) * 1000
-                    estimated_total_time = elapsed_time + time_to_completion
+                    # estimated_total_time = elapsed_time + time_to_completion
                     try:
                         current_message = """**Download Status**
 URL: {}
@@ -259,7 +259,7 @@ ETA: {}
                             url,
                             humanbytes(total_length),
                             humanbytes(downloaded),
-                            TimeFormatter(estimated_total_time)
+                            TimeFormatter(time_to_completion)
                         )
                         if current_message != display_message:
                             await bot.edit_message_text(
