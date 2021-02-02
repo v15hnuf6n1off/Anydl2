@@ -4,6 +4,8 @@
 
 # https://github.com/SpEcHiDe/PyroGramBot/blob/master/pyrobot/pyrobot.py
 
+import shutil
+
 from pyrogram import Client
 
 from anydlbot import APP_ID, API_HASH, BOT_TOKEN, WORK_DIR, LOGGER
@@ -32,4 +34,6 @@ class AnyDLBot(Client):
 
     async def stop(self, *args):
         await super().stop()
+
+        shutil.rmtree(WORK_DIR, ignore_errors=True)
         LOGGER.info("AnyDLBot stopped. Bye.")
