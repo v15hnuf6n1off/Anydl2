@@ -5,10 +5,9 @@
 # https://github.com/SpEcHiDe/PyroGramBot/blob/master/pyrobot/pyrobot.py
 
 import shutil
-
 from pyrogram import Client
-
-from anydlbot import APP_ID, API_HASH, BOT_TOKEN, WORK_DIR, LOGGER
+from anydlbot import LOGGER
+from anydlbot.config import Config
 
 
 class AnyDLBot(Client):
@@ -18,10 +17,9 @@ class AnyDLBot(Client):
         plugins = dict(root=f"{name}/plugins")
         super().__init__(
             session_name=":memory:",
-            api_id=APP_ID,
-            api_hash=API_HASH,
-            bot_token=BOT_TOKEN,
-            workdir=WORK_DIR,
+            api_id=Config.APP_ID,
+            api_hash=Config.API_HASH,
+            bot_token=Config.BOT_TOKEN,
             parse_mode="html",
             plugins=plugins
         )
@@ -35,5 +33,5 @@ class AnyDLBot(Client):
     async def stop(self, *args):
         await super().stop()
 
-        shutil.rmtree(WORK_DIR, ignore_errors=True)
+        shutil.rmtree(Config.WORK_DIR, ignore_errors=True)
         LOGGER.info("AnyDLBot stopped. Bye.")

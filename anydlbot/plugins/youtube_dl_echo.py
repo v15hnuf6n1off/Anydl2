@@ -5,11 +5,12 @@
 import os
 import json
 
-from pyrogram import Client, filters
 from pyrogram.types import Message, InlineKeyboardButton
 from pykeyboard import InlineKeyboard
 
-from anydlbot import AUTH_USERS, HTTP_PROXY, WORK_DIR, DEF_THUMB_NAIL_VID_S, LOGGER
+from anydlbot import auth_users, fregex, LOGGER
+from anydlbot.bot import AnyDLBot
+from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
 from anydlbot.helper_funcs.extract_link import get_link
@@ -20,23 +21,18 @@ from translation import Translation
 rgx = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)"
 
 
-@Client.on_message(filters.regex(rgx) & AUTH_USERS)
+@AnyDLBot.on_message(auth_users & fregex)
 async def echo(_, update: Message):
-    # LOGGER.info(update)
-    # await bot.send_chat_action(
-    #     chat_id=update.chat.id,
-    #     action="typing"
-    # )
     LOGGER.info(update.from_user)
     url, _, youtube_dl_username, youtube_dl_password = get_link(update)
-    if HTTP_PROXY is not None:
+    if Config.HTTP_PROXY is not None:
         command_to_exec = [
             "youtube-dl",
             "--no-warnings",
             "--youtube-skip-dash-manifest",
             "-j",
             url,
-            "--proxy", HTTP_PROXY
+            "--proxy", Config.HTTP_PROXY
         ]
     else:
         command_to_exec = [
@@ -76,7 +72,7 @@ async def echo(_, update: Message):
         if "\n" in x_reponse:
             x_reponse, _ = x_reponse.split("\n")
         response_json = json.loads(x_reponse)
-        save_ytdl_json_path = WORK_DIR + \
+        save_ytdl_json_path = Config.WORK_DIR + \
             "/" + str(update.from_user.id) + ".json"
         with open(save_ytdl_json_path, "w", encoding="utf8") as outfile:
             json.dump(response_json, outfile, ensure_ascii=False)
@@ -138,9 +134,9 @@ async def echo(_, update: Message):
                 InlineKeyboardButton("file", cb_string_file)
             )
         # logger.info(reply_markup)
-        thumbnail = DEF_THUMB_NAIL_VID_S
-        thumbnail_image = DEF_THUMB_NAIL_VID_S
-        save_thumbnail = os.path.join(WORK_DIR, str(update.from_user.id) + ".jpg")
+        thumbnail = Config.DEF_THUMB_NAIL_VID_S
+        thumbnail_image = Config.DEF_THUMB_NAIL_VID_S
+        save_thumbnail = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
         if "thumbnail" in response_json:
             if response_json["thumbnail"] is not None:
                 thumbnail = response_json["thumbnail"]
@@ -176,7 +172,7 @@ async def echo(_, update: Message):
             InlineKeyboardButton("Document", cb_string_file)
         )
         await update.reply_photo(
-            photo=DEF_THUMB_NAIL_VID_S,
+            photo=Config.DEF_THUMB_NAIL_VID_S,
             quote=True,
             caption=Translation.FORMAT_SELECTION.format(""),
             reply_markup=ikeyboard,

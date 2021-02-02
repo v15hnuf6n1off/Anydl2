@@ -2,18 +2,16 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-from pyrogram import Client
 from pyrogram.types import CallbackQuery
 
-from anydlbot import AUTH_USERS, LOGGER
+from anydlbot.bot import AnyDLBot
+from anydlbot.config import Config
 from anydlbot.plugins.youtube_dl_button import youtube_dl_call_back
 from anydlbot.plugins.dl_button import ddl_call_back
 
 
-
-@Client.on_callback_query(AUTH_USERS)
+@AnyDLBot.on_callback_query(Config.AUTH_USERS)
 async def button(bot, update: CallbackQuery):
-    # LOGGER.info(update)
     # NOTE: You should always answer,
     # but we want different conditionals to
     # be able to answer to differnetly

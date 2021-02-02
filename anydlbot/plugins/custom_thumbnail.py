@@ -3,18 +3,18 @@
 # (c) Shrimadhav U K
 
 import os
-
-from pyrogram import Client, filters
-
-from anydlbot import AUTH_USERS, WORK_DIR, LOGGER
+from pyrogram import filters
+from anydlbot import auth_users, fphoto
+from anydlbot.bot import AnyDLBot
+from anydlbot.config import Config
 # the Strings used for this "thing"
 from translation import Translation
 
 
-@Client.on_message(filters.photo & AUTH_USERS)
+@AnyDLBot.on_message(auth_users & fphoto)
 async def save_photo(bot, update):
     download_location = os.path.join(
-        WORK_DIR,
+        Config.WORK_DIR,
         str(update.from_user.id) + ".jpg"
     )
     await bot.download_media(
@@ -28,10 +28,10 @@ async def save_photo(bot, update):
     )
 
 
-@Client.on_message(filters.command(["deletethumbnail"]) & AUTH_USERS)
+@AnyDLBot.on_message(filters.command(["deletethumbnail"]) & auth_users)
 async def delete_thumbnail(bot, update):
     download_location = os.path.join(
-        WORK_DIR,
+        Config.WORK_DIR,
         str(update.from_user.id)
     )
     try:

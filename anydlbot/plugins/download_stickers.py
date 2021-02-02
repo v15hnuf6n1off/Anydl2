@@ -6,24 +6,23 @@ import os
 import time
 
 from PIL import Image
-from pyrogram import Client, filters
 
-from anydlbot import AUTH_USERS, WORK_DIR, LOGGER
+from anydlbot import auth_users, fsticker
+from anydlbot.bot import AnyDLBot
+from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import progress_for_pyrogram
 # the Strings used for this "thing"
 from translation import Translation
 
 
-@Client.on_message(filters.sticker & AUTH_USERS)
+@AnyDLBot.on_message(auth_users & fsticker)
 async def DownloadStickersBot(_, update):
     if update.sticker.is_animated:
         await update.delete()
         return
 
-    LOGGER.info(update.from_user)
-    LOGGER.info(update)
     download_location = os.path.join(
-        WORK_DIR,
+        Config.WORK_DIR,
         str(update.from_user.id) + "_DownloadStickersBot_" +
         str(update.from_user.id) + ".png"
     )
