@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
-import json
 import os
 import shutil
 import time
@@ -13,13 +12,13 @@ from hachoir.parser import createParser
 # https://stackoverflow.com/a/37631799/4723940
 from PIL import Image
 from pyrogram.types import InputMediaPhoto
+import youtube_dl
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import progress_for_pyrogram, humanbytes
 from anydlbot.helper_funcs.help_Nekmo_ffmpeg import generate_screen_shots
 from anydlbot.helper_funcs.extract_link import get_link
-from anydlbot.helper_funcs.run_cmnd import run_shell_command
 # the Strings used for this "thing"
 from translation import Translation
 
@@ -29,13 +28,6 @@ async def youtube_dl_call_back(_, update):
     # youtube_dl extractors
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("|")
     thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
-    save_ytdl_json_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".json")
-    try:
-        with open(save_ytdl_json_path, "r", encoding="utf8") as f:
-            response_json = json.load(f)
-    except FileNotFoundError:
-        await update.message.delete()
-        return False
 
     youtube_dl_url, \
         custom_file_name, \
@@ -44,15 +36,11 @@ async def youtube_dl_call_back(_, update):
             update.message.reply_to_message
         )
     if not custom_file_name:
-        custom_file_name = str(response_json.get("title")) + \
-            "_" + youtube_dl_format + "." + youtube_dl_ext
+        custom_file_name = "%(title)s.%(ext)s"
     await update.message.edit_caption(
         caption=Translation.DOWNLOAD_START
     )
-    description = Translation.CUSTOM_CAPTION_UL_FILE
-    if "fulltitle" in response_json:
-        description = response_json["fulltitle"][0:1021]
-        # escape Markdown and special characters
+    # description = Translation.CUSTOM_CAPTION_UL_FILE
     tmp_directory_for_each_user = os.path.join(
         Config.WORK_DIR,
         str(update.from_user.id)
@@ -63,49 +51,48 @@ async def youtube_dl_call_back(_, update):
         tmp_directory_for_each_user,
         custom_file_name
     )
-    if tg_send_type == "audio":
-        command_to_exec = [
-            "youtube-dl",
-            "-c",
-            "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
-            "--prefer-ffmpeg",
-            "--extract-audio",
-            "--audio-format", youtube_dl_ext,
-            "--audio-quality", youtube_dl_format,
-            youtube_dl_url,
-            "-o", download_directory
-        ]
-    else:
+    ytdl_opts = {
+        "outtmpl": download_directory,
+        "ignoreerrors": True,
+        "nooverwrites": True,
+        "continuedl": True,
+        "noplaylist": True,
+        "max_filesize": Config.TG_MAX_FILE_SIZE,
+    }
+    if youtube_dl_username and youtube_dl_password:
+        ytdl_opts.update({
+            "username": youtube_dl_username,
+            "password": youtube_dl_password,
+        })
+    if tg_send_type == "Audio":
+        ytdl_opts.update({
+            "format": "bestaudio/best",
+            "postprocessors": [{
+                "key": "FFmpegExtractAudio",
+                "preferredcodec": youtube_dl_ext,
+                "preferredquality": youtube_dl_format
+            }, {
+                "key": "FFmpegMetadata"
+            }],
+        })
+    elif tg_send_type == "Video":
         minus_f_format = youtube_dl_format
         if "youtu" in youtube_dl_url:
             minus_f_format = youtube_dl_format + "+bestaudio"
-        command_to_exec = [
-            "youtube-dl",
-            "-c",
-            "--max-filesize", str(Config.TG_MAX_FILE_SIZE),
-            "--embed-subs",
-            "-f", minus_f_format,
-            "--hls-prefer-ffmpeg", youtube_dl_url,
-            "-o", download_directory
-        ]
-    if Config.HTTP_PROXY is not None:
-        command_to_exec.append("--proxy")
-        command_to_exec.append(Config.HTTP_PROXY)
-    if youtube_dl_username is not None:
-        command_to_exec.append("--username")
-        command_to_exec.append(youtube_dl_username)
-    if youtube_dl_password is not None:
-        command_to_exec.append("--password")
-        command_to_exec.append(youtube_dl_password)
-    command_to_exec.append("--no-warnings")
-    # command_to_exec.append("--quiet")
-    command_to_exec.append("--restrict-filenames")
-    LOGGER.info(command_to_exec)
+        ytdl_opts.update({
+            "format": minus_f_format,
+            "postprocessors": [{
+                "key": "FFmpegMetadata"
+            }],
+        })
+    with youtube_dl.YoutubeDL(ytdl_opts) as ytdl:
+        info = ytdl.extract_info(youtube_dl_url, download=False, extra_info=ytdl_opts)
+        title = info.get("title", None)
+        ytdl.download([youtube_dl_url])
+    finished = True
     start = datetime.now()
-    t_response, e_response = await run_shell_command(command_to_exec)
-    LOGGER.info(e_response)
-    LOGGER.info(t_response)
-    if e_response and Translation.YTDL_ERROR_MESSAGE in e_response:
+
+    """if e_response and Translation.YTDL_ERROR_MESSAGE in e_response:
         error_message = e_response.replace(
             Translation.YTDL_ERROR_MESSAGE,
             ""
@@ -113,10 +100,8 @@ async def youtube_dl_call_back(_, update):
         await update.message.edit_caption(
             caption=error_message
         )
-        return False
-    if t_response:
-        # LOGGER.info(t_response)
-        os.remove(save_ytdl_json_path)
+        return False"""
+    if finished:
         end_one = datetime.now()
         time_taken_for_download = (end_one - start).seconds
         download_directory_dirname = os.path.dirname(download_directory)
@@ -183,7 +168,7 @@ async def youtube_dl_call_back(_, update):
                 if tg_send_type == "audio":
                     await update.message.reply_audio(
                         audio=current_file_name,
-                        caption=description,
+                        caption=title,
                         parse_mode="HTML",
                         duration=duration,
                         # performer=response_json["uploader"],
@@ -201,22 +186,9 @@ async def youtube_dl_call_back(_, update):
                     await update.message.reply_document(
                         document=current_file_name,
                         thumb=thumb_image_path,
-                        caption=description,
+                        caption=title,
                         parse_mode="HTML",
                         # reply_markup=reply_markup,
-                        progress=progress_for_pyrogram,
-                        progress_args=(
-                            Translation.UPLOAD_START,
-                            update.message,
-                            start_time
-                        )
-                    )
-                elif tg_send_type == "vm":
-                    await update.message.reply_video_note(
-                        video_note=current_file_name,
-                        duration=duration,
-                        length=width,
-                        thumb=thumb_image_path,
                         progress=progress_for_pyrogram,
                         progress_args=(
                             Translation.UPLOAD_START,
@@ -227,7 +199,7 @@ async def youtube_dl_call_back(_, update):
                 elif tg_send_type == "video":
                     await update.message.reply_video(
                         video=current_file_name,
-                        caption=description,
+                        caption=title,
                         parse_mode="HTML",
                         duration=duration,
                         width=width,

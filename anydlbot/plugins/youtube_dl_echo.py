@@ -3,10 +3,10 @@
 # (c) Shrimadhav U K
 
 import os
-import json
 
 from pyrogram.types import Message, InlineKeyboardButton
 from pykeyboard import InlineKeyboard
+import youtube_dl
 
 from anydlbot import auth_users, fregex, LOGGER
 from anydlbot.bot import AnyDLBot
@@ -14,44 +14,25 @@ from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
 from anydlbot.helper_funcs.extract_link import get_link
-from anydlbot.helper_funcs.run_cmnd import run_shell_command
 # the Strings used for this "thing"
 from translation import Translation
-
-rgx = r"https?:\/\/(www\.)?[-a-zA-Z0-9@:%._\+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_\+.~#?&\/\/=]*)"
 
 
 @AnyDLBot.on_message(auth_users & fregex)
 async def echo(_, update: Message):
     LOGGER.info(update.from_user)
     url, _, youtube_dl_username, youtube_dl_password = get_link(update)
-    if Config.HTTP_PROXY is not None:
-        command_to_exec = [
-            "youtube-dl",
-            "--no-warnings",
-            "--youtube-skip-dash-manifest",
-            "-j",
-            url,
-            "--proxy", Config.HTTP_PROXY
-        ]
-    else:
-        command_to_exec = [
-            "youtube-dl",
-            "--no-warnings",
-            "--youtube-skip-dash-manifest",
-            "-j",
-            url
-        ]
-    if youtube_dl_username is not None:
-        command_to_exec.append("--username")
-        command_to_exec.append(youtube_dl_username)
-    if youtube_dl_password is not None:
-        command_to_exec.append("--password")
-        command_to_exec.append(youtube_dl_password)
-    # logger.info(command_to_exec)
-    t_response, e_response = await run_shell_command(command_to_exec)
-    # https://github.com/rg3/youtube-dl/issues/2630#issuecomment-38635239
-    if e_response and "nonnumeric port" not in e_response:
+
+    info_dict = {}
+    if youtube_dl_username and youtube_dl_password:
+        info_dict.update({
+            "username": youtube_dl_username,
+            "password": youtube_dl_password,
+        })
+    with youtube_dl.YoutubeDL() as ytdl:
+        info = ytdl.extract_info(url, download=False, extra_info=info_dict)
+
+    """if e_response and "nonnumeric port" not in e_response:
         # logger.warn("Status : FAIL", exc.returncode, exc.output)
         error_message = e_response.replace(
             Translation.YTDL_ERROR_MESSAGE,
@@ -65,24 +46,15 @@ async def echo(_, update: Message):
             parse_mode="html",
             disable_web_page_preview=True
         )
-        return False
-    if t_response:
-        # logger.info(t_response)
-        x_reponse = t_response
-        if "\n" in x_reponse:
-            x_reponse, _ = x_reponse.split("\n")
-        response_json = json.loads(x_reponse)
-        save_ytdl_json_path = Config.WORK_DIR + \
-            "/" + str(update.from_user.id) + ".json"
-        with open(save_ytdl_json_path, "w", encoding="utf8") as outfile:
-            json.dump(response_json, outfile, ensure_ascii=False)
+        return False"""
+    if info:
         # logger.info(response_json)
         ikeyboard = InlineKeyboard()
         duration = None
-        if "duration" in response_json:
-            duration = response_json["duration"]
-        if "formats" in response_json:
-            for formats in response_json["formats"]:
+        if "duration" in info:
+            duration = info["duration"]
+        if "formats" in info:
+            for formats in info["formats"]:
                 format_id = formats.get("format_id")
                 format_string = formats.get("format_note")
                 if format_string is None:
@@ -119,8 +91,8 @@ async def echo(_, update: Message):
                     InlineKeyboardButton("MP3 (320 kbps)", cb_string)
                 )
         else:
-            format_id = response_json["format_id"]
-            format_ext = response_json["ext"]
+            format_id = info["format_id"]
+            format_ext = info["ext"]
             cb_string_file = f"file|{format_id}|{format_ext}"
             cb_string_video = f"video|{format_id}|{format_ext}"
             ikeyboard.row(
@@ -137,10 +109,10 @@ async def echo(_, update: Message):
         thumbnail = Config.DEF_THUMB_NAIL_VID_S
         thumbnail_image = Config.DEF_THUMB_NAIL_VID_S
         save_thumbnail = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
-        if "thumbnail" in response_json:
-            if response_json["thumbnail"] is not None:
-                thumbnail = response_json["thumbnail"]
-                thumbnail_image = response_json["thumbnail"]
+        if "thumbnail" in info:
+            if info["thumbnail"] is not None:
+                thumbnail = info["thumbnail"]
+                thumbnail_image = info["thumbnail"]
         if os.path.exists(save_thumbnail):
             thumb_image_path = save_thumbnail
         else:
