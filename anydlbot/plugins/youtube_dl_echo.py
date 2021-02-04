@@ -109,6 +109,8 @@ async def echo(_, update: Message):
         thumbnail = Config.DEF_THUMB_NAIL_VID_S
         thumbnail_image = Config.DEF_THUMB_NAIL_VID_S
         save_thumbnail = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
+        if not os.path.isdir(Config.WORK_DIR):
+            os.makedirs(Config.WORK_DIR)
         if "thumbnail" in info:
             if info["thumbnail"] is not None:
                 thumbnail = info["thumbnail"]
