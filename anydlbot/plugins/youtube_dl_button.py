@@ -85,23 +85,14 @@ async def youtube_dl_call_back(_, update):
                 "key": "FFmpegMetadata"
             }],
         })
+
+    start = datetime.now()
     with youtube_dl.YoutubeDL(ytdl_opts) as ytdl:
         info = ytdl.extract_info(youtube_dl_url, download=False, extra_info=ytdl_opts)
         title = info.get("title", None)
-        ytdl.download([youtube_dl_url])
-    finished = True
-    start = datetime.now()
+        yt_task = ytdl.download([youtube_dl_url])
 
-    """if e_response and Translation.YTDL_ERROR_MESSAGE in e_response:
-        error_message = e_response.replace(
-            Translation.YTDL_ERROR_MESSAGE,
-            ""
-        )
-        await update.message.edit_caption(
-            caption=error_message
-        )
-        return False"""
-    if finished:
+    if yt_task == 0:
         end_one = datetime.now()
         time_taken_for_download = (end_one - start).seconds
         download_directory_dirname = os.path.dirname(download_directory)
