@@ -29,6 +29,10 @@ async def echo(_, update: Message):
             "username": youtube_dl_username,
             "password": youtube_dl_password,
         })
+    if "hotstar" in url:
+        info_dict.update({
+            "geo_bypass_country": "IN",
+        })
     with youtube_dl.YoutubeDL() as ytdl:
         try:
             info = ytdl.extract_info(url, download=False, extra_info=info_dict)

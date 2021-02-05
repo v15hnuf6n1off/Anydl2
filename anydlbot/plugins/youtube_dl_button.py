@@ -64,6 +64,10 @@ async def youtube_dl_call_back(_, update):
             "username": youtube_dl_username,
             "password": youtube_dl_password,
         })
+    if "hotstar" in youtube_dl_url:
+        ytdl_opts.update({
+            "geo_bypass_country": "IN",
+        })
     if tg_send_type == "Audio":
         ytdl_opts.update({
             "format": "bestaudio/best",
