@@ -30,23 +30,15 @@ async def echo(_, update: Message):
             "password": youtube_dl_password,
         })
     with youtube_dl.YoutubeDL() as ytdl:
-        info = ytdl.extract_info(url, download=False, extra_info=info_dict)
+        try:
+            info = ytdl.extract_info(url, download=False, extra_info=info_dict)
+        except youtube_dl.utils.DownloadError as ytdl_error:
+            await update.reply_text(
+                text=str(ytdl_error),
+                quote=True
+            )
+            return False
 
-    """if e_response and "nonnumeric port" not in e_response:
-        # logger.warn("Status : FAIL", exc.returncode, exc.output)
-        error_message = e_response.replace(
-            Translation.YTDL_ERROR_MESSAGE,
-            ""
-        )
-        if Translation.ISOAYD_PREMIUM_VIDEOS in error_message:
-            error_message += Translation.SET_CUSTOM_USERNAME_PASSWORD
-        await update.reply_text(
-            text=Translation.NO_VOID_FORMAT_FOUND.format(str(error_message)),
-            quote=True,
-            parse_mode="html",
-            disable_web_page_preview=True
-        )
-        return False"""
     if info:
         # logger.info(response_json)
         ikeyboard = InlineKeyboard()
