@@ -33,9 +33,9 @@ async def echo(_, update: Message):
         info_dict.update({
             "geo_bypass_country": "IN",
         })
-    with youtube_dl.YoutubeDL() as ytdl:
+    with youtube_dl.YoutubeDL(info_dict) as ytdl:
         try:
-            info = ytdl.extract_info(url, download=False, extra_info=info_dict)
+            info = ytdl.extract_info(url, download=False)
         except youtube_dl.utils.DownloadError as ytdl_error:
             await update.reply_text(
                 text=str(ytdl_error),
