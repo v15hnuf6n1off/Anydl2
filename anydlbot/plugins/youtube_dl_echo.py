@@ -76,9 +76,9 @@ async def echo(_, update: Message):
                         InlineKeyboardButton(f"Document {approx_file_size}", cb_string_file)
                     )
             if duration is not None:
-                cb_string_64 = "audio|64k|mp3"
-                cb_string_128 = "audio|128k|mp3"
-                cb_string = "audio|320k|mp3"
+                cb_string_64 = "audio|64|mp3"
+                cb_string_128 = "audio|128|mp3"
+                cb_string = "audio|320|mp3"
                 ikeyboard.row(
                     InlineKeyboardButton("MP3 (64 kbps)", cb_string_64),
                     InlineKeyboardButton("MP3 (128 kbps)", cb_string_128)
