@@ -68,7 +68,7 @@ async def youtube_dl_call_back(_, update):
         ytdl_opts.update({
             "geo_bypass_country": "IN",
         })
-    if tg_send_type == "Audio":
+    if tg_send_type == "audio":
         ytdl_opts.update({
             "format": "bestaudio/best",
             "postprocessors": [{
@@ -79,10 +79,10 @@ async def youtube_dl_call_back(_, update):
                 "key": "FFmpegMetadata"
             }],
         })
-    elif tg_send_type == "Video":
+    elif tg_send_type == "video":
         minus_f_format = youtube_dl_format
         if "youtu" in youtube_dl_url:
-            minus_f_format = youtube_dl_format + "+bestaudio"
+            minus_f_format = f"{youtube_dl_format}+bestaudio"
         ytdl_opts.update({
             "format": minus_f_format,
             "postprocessors": [{
@@ -92,7 +92,7 @@ async def youtube_dl_call_back(_, update):
 
     start = datetime.now()
     with youtube_dl.YoutubeDL(ytdl_opts) as ytdl:
-        info = ytdl.extract_info(youtube_dl_url, download=False, extra_info=ytdl_opts)
+        info = ytdl.extract_info(youtube_dl_url, download=False)
         title = info.get("title", None)
         yt_task = ytdl.download([youtube_dl_url])
 
