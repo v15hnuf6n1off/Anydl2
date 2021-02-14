@@ -4,16 +4,17 @@
 
 import os
 
-from pyrogram.types import Message, InlineKeyboardButton
-from pykeyboard import InlineKeyboard
 import youtube_dl
+from pyrogram.types import InlineKeyboardButton, Message
+from pykeyboard import InlineKeyboard
 
-from anydlbot import auth_users, fregex, LOGGER
+from anydlbot import LOGGER, auth_users, fregex
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
-from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
 from anydlbot.helper_funcs.extract_link import get_link
+from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
+
 # the Strings used for this "thing"
 from translation import Translation
 
@@ -25,22 +26,23 @@ async def echo(_, update: Message):
 
     info_dict = {}
     if youtube_dl_username and youtube_dl_password:
-        info_dict.update({
-            "username": youtube_dl_username,
-            "password": youtube_dl_password,
-        })
+        info_dict.update(
+            {
+                "username": youtube_dl_username,
+                "password": youtube_dl_password,
+            }
+        )
     if "hotstar" in url:
-        info_dict.update({
-            "geo_bypass_country": "IN",
-        })
+        info_dict.update(
+            {
+                "geo_bypass_country": "IN",
+            }
+        )
     with youtube_dl.YoutubeDL(info_dict) as ytdl:
         try:
             info = ytdl.extract_info(url, download=False)
         except youtube_dl.utils.DownloadError as ytdl_error:
-            await update.reply_text(
-                text=str(ytdl_error),
-                quote=True
-            )
+            await update.reply_text(text=str(ytdl_error), quote=True)
             return False
 
     if info:
@@ -66,14 +68,22 @@ async def echo(_, update: Message):
                 cb_string_file = f"file|{format_id}|{format_ext}"
                 if format_string and "audio only" not in format_string:
                     ikeyboard.row(
-                        InlineKeyboardButton(f"{format_string} Video {format_ext}", cb_string_video),
-                        InlineKeyboardButton(f"Document {approx_file_size}", cb_string_file)
+                        InlineKeyboardButton(
+                            f"{format_string} Video {format_ext}", cb_string_video
+                        ),
+                        InlineKeyboardButton(
+                            f"Document {approx_file_size}", cb_string_file
+                        ),
                     )
                 else:
                     # special weird case :\
                     ikeyboard.row(
-                        InlineKeyboardButton(f"Video {approx_file_size}", cb_string_video),
-                        InlineKeyboardButton(f"Document {approx_file_size}", cb_string_file)
+                        InlineKeyboardButton(
+                            f"Video {approx_file_size}", cb_string_video
+                        ),
+                        InlineKeyboardButton(
+                            f"Document {approx_file_size}", cb_string_file
+                        ),
                     )
             if duration is not None:
                 cb_string_64 = "audio|64|mp3"
@@ -81,11 +91,9 @@ async def echo(_, update: Message):
                 cb_string = "audio|320|mp3"
                 ikeyboard.row(
                     InlineKeyboardButton("MP3 (64 kbps)", cb_string_64),
-                    InlineKeyboardButton("MP3 (128 kbps)", cb_string_128)
+                    InlineKeyboardButton("MP3 (128 kbps)", cb_string_128),
                 )
-                ikeyboard.row(
-                    InlineKeyboardButton("MP3 (320 kbps)", cb_string)
-                )
+                ikeyboard.row(InlineKeyboardButton("MP3 (320 kbps)", cb_string))
         else:
             format_id = info["format_id"]
             format_ext = info["ext"]
@@ -93,18 +101,20 @@ async def echo(_, update: Message):
             cb_string_video = f"video|{format_id}|{format_ext}"
             ikeyboard.row(
                 InlineKeyboardButton("Video", cb_string_video),
-                InlineKeyboardButton("Document", cb_string_file)
+                InlineKeyboardButton("Document", cb_string_file),
             )
             cb_string_file = f"file={format_id}={format_ext}"
             cb_string_video = f"video={format_id}={format_ext}"
             ikeyboard.row(
                 InlineKeyboardButton("video", cb_string_video),
-                InlineKeyboardButton("file", cb_string_file)
+                InlineKeyboardButton("file", cb_string_file),
             )
         # logger.info(reply_markup)
         thumbnail = Config.DEF_THUMB_NAIL_VID_S
         thumbnail_image = Config.DEF_THUMB_NAIL_VID_S
-        save_thumbnail = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
+        save_thumbnail = os.path.join(
+            Config.WORK_DIR, str(update.from_user.id) + ".jpg"
+        )
         if not os.path.isdir(Config.WORK_DIR):
             os.makedirs(Config.WORK_DIR)
         if "thumbnail" in info:
@@ -121,16 +131,16 @@ async def echo(_, update: Message):
                 None,  # bot,
                 Translation.DOWNLOAD_START,
                 update.message_id,
-                update.chat.id
+                update.chat.id,
             )
         await update.reply_photo(
             photo=thumb_image_path,
             quote=True,
-            caption=Translation.FORMAT_SELECTION.format(
-                thumbnail
-            ) + "\n" + Translation.SET_CUSTOM_USERNAME_PASSWORD,
+            caption=Translation.FORMAT_SELECTION.format(thumbnail)
+            + "\n"
+            + Translation.SET_CUSTOM_USERNAME_PASSWORD,
             reply_markup=ikeyboard,
-            parse_mode="html"
+            parse_mode="html",
         )
     else:
         # fallback for nonnumeric port a.k.a seedbox.io
@@ -139,7 +149,7 @@ async def echo(_, update: Message):
         cb_string_video = "video=OFL=ENON"
         ikeyboard.row(
             InlineKeyboardButton("Video", cb_string_video),
-            InlineKeyboardButton("Document", cb_string_file)
+            InlineKeyboardButton("Document", cb_string_file),
         )
         await update.reply_photo(
             photo=Config.DEF_THUMB_NAIL_VID_S,
@@ -147,5 +157,5 @@ async def echo(_, update: Message):
             caption=Translation.FORMAT_SELECTION.format(""),
             reply_markup=ikeyboard,
             parse_mode="html",
-            reply_to_message_id=update.message_id
+            reply_to_message_id=update.message_id,
         )

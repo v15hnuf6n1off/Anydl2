@@ -4,10 +4,10 @@
 
 from pyrogram.types import CallbackQuery
 
-from anydlbot.bot import AnyDLBot
 from anydlbot import auth_users
-from anydlbot.plugins.youtube_dl_button import youtube_dl_call_back
+from anydlbot.bot import AnyDLBot
 from anydlbot.plugins.dl_button import ddl_call_back
+from anydlbot.plugins.youtube_dl_button import youtube_dl_call_back
 
 
 @AnyDLBot.on_callback_query(auth_users)

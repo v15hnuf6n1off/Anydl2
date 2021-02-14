@@ -5,7 +5,9 @@
 # https://github.com/SpEcHiDe/PyroGramBot/blob/master/pyrobot/pyrobot.py
 
 import shutil
+
 from pyrogram import Client
+
 from anydlbot import LOGGER
 from anydlbot.config import Config
 
@@ -21,7 +23,7 @@ class AnyDLBot(Client):
             api_hash=Config.API_HASH,
             bot_token=Config.BOT_TOKEN,
             parse_mode="html",
-            plugins=plugins
+            plugins=plugins,
         )
 
     async def start(self):

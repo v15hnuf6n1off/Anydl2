@@ -2,11 +2,11 @@
 # -*- coding: utf-8 -*-
 # (c) Shrimadhav U K
 
+import asyncio
 import os
 import time
 from datetime import datetime
 
-import asyncio
 import aiohttp
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
@@ -15,8 +15,9 @@ from PIL import Image
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
-from anydlbot.helper_funcs.display_progress import progress_for_pyrogram, humanbytes, TimeFormatter
+from anydlbot.helper_funcs.display_progress import TimeFormatter, humanbytes, progress_for_pyrogram
 from anydlbot.helper_funcs.extract_link import get_link
+
 # the Strings used for this "thing"
 from translation import Translation
 
@@ -26,15 +27,14 @@ async def ddl_call_back(bot, update):
     cb_data = update.data
     # youtube_dl extractors
     tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("=")
-    thumb_image_path = Config.WORK_DIR + \
-        "/" + str(update.from_user.id) + ".jpg"
+    thumb_image_path = Config.WORK_DIR + "/" + str(update.from_user.id) + ".jpg"
 
-    youtube_dl_url, \
-        custom_file_name, \
-        youtube_dl_username, \
-        youtube_dl_password = get_link(
-            update.message.reply_to_message
-        )
+    (
+        youtube_dl_url,
+        custom_file_name,
+        youtube_dl_username,
+        youtube_dl_password,
+    ) = get_link(update.message.reply_to_message)
     if not custom_file_name:
         custom_file_name = os.path.basename(youtube_dl_url)
 
@@ -43,18 +43,14 @@ async def ddl_call_back(bot, update):
     await bot.edit_message_text(
         text=Translation.DOWNLOAD_START,
         chat_id=update.message.chat.id,
-        message_id=update.message.message_id
+        message_id=update.message.message_id,
     )
     tmp_directory_for_each_user = os.path.join(
-        Config.WORK_DIR,
-        str(update.from_user.id)
+        Config.WORK_DIR, str(update.from_user.id)
     )
     if not os.path.isdir(tmp_directory_for_each_user):
         os.makedirs(tmp_directory_for_each_user)
-    download_directory = os.path.join(
-        tmp_directory_for_each_user,
-        custom_file_name
-    )
+    download_directory = os.path.join(tmp_directory_for_each_user, custom_file_name)
 
     async with aiohttp.ClientSession() as session:
         c_time = time.time()
@@ -66,13 +62,13 @@ async def ddl_call_back(bot, update):
                 download_directory,
                 update.message.chat.id,
                 update.message.message_id,
-                c_time
+                c_time,
             )
         except asyncio.TimeoutError:
             await bot.edit_message_text(
                 text=Translation.SLOW_URL_DECED,
                 chat_id=update.message.chat.id,
-                message_id=update.message.message_id
+                message_id=update.message.message_id,
             )
             return False
     if os.path.exists(download_directory):
@@ -80,20 +76,18 @@ async def ddl_call_back(bot, update):
         await bot.edit_message_text(
             text=Translation.UPLOAD_START,
             chat_id=update.message.chat.id,
-            message_id=update.message.message_id
+            message_id=update.message.message_id,
         )
         try:
             file_size = os.stat(download_directory).st_size
         except FileNotFoundError:
-            await update.message.edit_text(
-                text=Translation.SLOW_URL_DECED
-            )
+            await update.message.edit_text(text=Translation.SLOW_URL_DECED)
             return False
         if file_size > Config.TG_MAX_FILE_SIZE:
             await bot.edit_message_text(
                 chat_id=update.message.chat.id,
                 text=Translation.RCHD_TG_API_LIMIT,
-                message_id=update.message.message_id
+                message_id=update.message.message_id,
             )
         else:
             # get the correct width, height, and duration
@@ -106,7 +100,7 @@ async def ddl_call_back(bot, update):
                 metadata = extractMetadata(createParser(download_directory))
                 if metadata is not None:
                     if metadata.has("duration"):
-                        duration = metadata.get('duration').seconds
+                        duration = metadata.get("duration").seconds
             # get the correct width, height, and duration
             # for videos greater than 10MB
             if os.path.exists(thumb_image_path):
@@ -122,9 +116,7 @@ async def ddl_call_back(bot, update):
                 # resize image
                 # ref: https://t.me/PyrogramChat/44663
                 # https://stackoverflow.com/a/21669827/4723940
-                Image.open(thumb_image_path).convert(
-                    "RGB"
-                ).save(thumb_image_path)
+                Image.open(thumb_image_path).convert("RGB").save(thumb_image_path)
             else:
                 thumb_image_path = None
             start_time = time.time()
@@ -142,8 +134,8 @@ async def ddl_call_back(bot, update):
                     progress_args=(
                         Translation.UPLOAD_START,
                         update.message,
-                        start_time
-                    )
+                        start_time,
+                    ),
                 )
             elif tg_send_type == "file":
                 await update.message.reply_document(
@@ -155,8 +147,8 @@ async def ddl_call_back(bot, update):
                     progress_args=(
                         Translation.UPLOAD_START,
                         update.message,
-                        start_time
-                    )
+                        start_time,
+                    ),
                 )
             elif tg_send_type == "vm":
                 await update.message.reply_video_note(
@@ -168,8 +160,8 @@ async def ddl_call_back(bot, update):
                     progress_args=(
                         Translation.UPLOAD_START,
                         update.message,
-                        start_time
-                    )
+                        start_time,
+                    ),
                 )
             elif tg_send_type == "video":
                 await update.message.reply_video(
@@ -185,8 +177,8 @@ async def ddl_call_back(bot, update):
                     progress_args=(
                         Translation.UPLOAD_START,
                         update.message,
-                        start_time
-                    )
+                        start_time,
+                    ),
                 )
             else:
                 LOGGER.info("Did this happen? :\\")
@@ -204,19 +196,11 @@ async def ddl_call_back(bot, update):
             text=Translation.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),
             chat_id=update.message.chat.id,
             message_id=update.message.message_id,
-            disable_web_page_preview=True
+            disable_web_page_preview=True,
         )
 
 
-async def download_coroutine(
-    bot,
-    session,
-    url,
-    file_name,
-    chat_id,
-    message_id,
-    start
-):
+async def download_coroutine(bot, session, url, file_name, chat_id, message_id, start):
     downloaded = 0
     display_message = ""
     async with session.get(url, timeout=Config.PROCESS_MAX_TIMEOUT) as response:
@@ -229,7 +213,9 @@ async def download_coroutine(
             message_id,
             text="""Initiating Download
 URL: {}
-File Size: {}""".format(url, humanbytes(total_length))
+File Size: {}""".format(
+                url, humanbytes(total_length)
+            ),
         )
         with open(file_name, "wb") as f_handle:
             while True:
@@ -244,9 +230,9 @@ File Size: {}""".format(url, humanbytes(total_length))
                     # percentage = downloaded * 100 / total_length
                     speed = downloaded / diff
                     # elapsed_time = round(diff) * 1000
-                    time_to_completion = round(
-                        (total_length - downloaded) / speed
-                    ) * 1000
+                    time_to_completion = (
+                        round((total_length - downloaded) / speed) * 1000
+                    )
                     # estimated_total_time = elapsed_time + time_to_completion
                     try:
                         current_message = """**Download Status**
@@ -259,13 +245,11 @@ ETA: {}
                             url,
                             humanbytes(total_length),
                             humanbytes(downloaded),
-                            TimeFormatter(time_to_completion)
+                            TimeFormatter(time_to_completion),
                         )
                         if current_message != display_message:
                             await bot.edit_message_text(
-                                chat_id,
-                                message_id,
-                                text=current_message
+                                chat_id, message_id, text=current_message
                             )
                             display_message = current_message
                     except Exception as e:
