@@ -8,15 +8,12 @@ import time
 from datetime import datetime
 
 import aiohttp
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
-# https://stackoverflow.com/a/37631799/4723940
-from PIL import Image
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
-from anydlbot.helper_funcs.display_progress import TimeFormatter, humanbytes, progress_for_pyrogram
+from anydlbot.helper_funcs.display_progress import TimeFormatter, humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
+from anydlbot.plugins.uploader import upload_worker
 
 # the Strings used for this "thing"
 from translation import Translation
@@ -32,14 +29,14 @@ async def ddl_call_back(bot, update):
     (
         youtube_dl_url,
         custom_file_name,
-        youtube_dl_username,
-        youtube_dl_password,
+        _,
+        _,
     ) = get_link(update.message.reply_to_message)
     if not custom_file_name:
         custom_file_name = os.path.basename(youtube_dl_url)
 
     description = Translation.CUSTOM_CAPTION_UL_FILE
-    start = datetime.now()
+    start_download = datetime.now()
     await bot.edit_message_text(
         text=Translation.DOWNLOAD_START,
         chat_id=update.message.chat.id,
@@ -72,125 +69,29 @@ async def ddl_call_back(bot, update):
             )
             return False
     if os.path.exists(download_directory):
-        end_one = datetime.now()
+        end_download = datetime.now()
+        time_taken_for_download = (end_download - start_download).seconds
         await bot.edit_message_text(
-            text=Translation.UPLOAD_START,
+            text=f"Download took {time_taken_for_download} seconds.\n"
+            + Translation.UPLOAD_START,
             chat_id=update.message.chat.id,
             message_id=update.message.message_id,
         )
         try:
-            file_size = os.stat(download_directory).st_size
-        except FileNotFoundError:
-            await update.message.edit_text(text=Translation.SLOW_URL_DECED)
-            return False
-        if file_size > Config.TG_MAX_FILE_SIZE:
-            await bot.edit_message_text(
-                chat_id=update.message.chat.id,
-                text=Translation.RCHD_TG_API_LIMIT,
-                message_id=update.message.message_id,
+            upl = await upload_worker(
+                update, "none", tg_send_type, False, download_directory
             )
-        else:
-            # get the correct width, height, and duration
-            # for videos greater than 10MB
-            # ref: message from @BotSupport
-            width = 0
-            height = 0
-            duration = 0
-            if tg_send_type != "file":
-                metadata = extractMetadata(createParser(download_directory))
-                if metadata is not None:
-                    if metadata.has("duration"):
-                        duration = metadata.get("duration").seconds
-            # get the correct width, height, and duration
-            # for videos greater than 10MB
-            if os.path.exists(thumb_image_path):
-                width = 0
-                height = 0
-                metadata = extractMetadata(createParser(thumb_image_path))
-                if metadata.has("width"):
-                    width = metadata.get("width")
-                if metadata.has("height"):
-                    height = metadata.get("height")
-                if tg_send_type == "vm":
-                    height = width
-                # resize image
-                # ref: https://t.me/PyrogramChat/44663
-                # https://stackoverflow.com/a/21669827/4723940
-                Image.open(thumb_image_path).convert("RGB").save(thumb_image_path)
-            else:
-                thumb_image_path = None
-            start_time = time.time()
-            # try to upload file
-            if tg_send_type == "audio":
-                await update.message.reply_audio(
-                    audio=download_directory,
-                    caption=description,
-                    duration=duration,
-                    # performer=response_json["uploader"],
-                    # title=response_json["title"],
-                    # reply_markup=reply_markup,
-                    thumb=thumb_image_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        update.message,
-                        start_time,
-                    ),
-                )
-            elif tg_send_type == "file":
-                await update.message.reply_document(
-                    document=download_directory,
-                    thumb=thumb_image_path,
-                    caption=description,
-                    # reply_markup=reply_markup,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        update.message,
-                        start_time,
-                    ),
-                )
-            elif tg_send_type == "vm":
-                await update.message.reply_video_note(
-                    video_note=download_directory,
-                    duration=duration,
-                    length=width,
-                    thumb=thumb_image_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        update.message,
-                        start_time,
-                    ),
-                )
-            elif tg_send_type == "video":
-                await update.message.reply_video(
-                    video=download_directory,
-                    caption=description,
-                    duration=duration,
-                    width=width,
-                    height=height,
-                    supports_streaming=True,
-                    # reply_markup=reply_markup,
-                    thumb=thumb_image_path,
-                    progress=progress_for_pyrogram,
-                    progress_args=(
-                        Translation.UPLOAD_START,
-                        update.message,
-                        start_time,
-                    ),
-                )
-            else:
-                LOGGER.info("Did this happen? :\\")
-            end_two = datetime.now()
-            try:
-                os.remove(download_directory)
-                os.remove(thumb_image_path)
-            except:
-                pass
-            time_taken_for_download = (end_one - start).seconds
-            time_taken_for_upload = (end_two - end_one).seconds
-            await update.message.delete()
+            LOGGER.info(upl)
+        except:
+            return False
+
+        try:
+            os.remove(download_directory)
+            os.remove(thumb_image_path)
+        except:
+            pass
+        await update.message.delete()
+
     else:
         await bot.edit_message_text(
             text=Translation.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),
