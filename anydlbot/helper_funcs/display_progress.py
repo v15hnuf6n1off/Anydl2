@@ -25,13 +25,13 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
         progress = "[{0}{1}] \nP: {2}%\n".format(
             "".join(
                 [
-                    Config.FINISHED_PROGRESS_STR
+                    Config.FINISHED_PROGRESS_BLOCK
                     for _ in range(math.floor(percentage / 5))
                 ]
             ),
             "".join(
                 [
-                    Config.UN_FINISHED_PROGRESS_STR
+                    Config.UNFINISHED_PROGRESS_BLOCK
                     for _ in range(20 - math.floor(percentage / 5))
                 ]
             ),

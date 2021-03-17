@@ -6,7 +6,6 @@ import os
 
 from pyrogram import filters
 
-from anydlbot import auth_users, fphoto
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
 
@@ -14,7 +13,7 @@ from anydlbot.config import Config
 from translation import Translation
 
 
-@AnyDLBot.on_message(auth_users & fphoto)
+@AnyDLBot.on_message(filters.photo & filters.user(Config.USER_IDS))
 async def save_photo(bot, update):
     download_location = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
     await bot.download_media(message=update, file_name=download_location)
@@ -25,7 +24,7 @@ async def save_photo(bot, update):
     )
 
 
-@AnyDLBot.on_message(filters.command(["deletethumbnail"]) & auth_users)
+@AnyDLBot.on_message(filters.command("deletethumbnail") & filters.user(Config.USER_IDS))
 async def delete_thumbnail(bot, update):
     download_location = os.path.join(Config.WORK_DIR, str(update.from_user.id))
     try:

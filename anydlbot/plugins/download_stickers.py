@@ -5,9 +5,9 @@
 import os
 import time
 
+from pyrogram import filters
 from PIL import Image
 
-from anydlbot import auth_users, fsticker
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import progress_for_pyrogram
@@ -16,7 +16,7 @@ from anydlbot.helper_funcs.display_progress import progress_for_pyrogram
 from translation import Translation
 
 
-@AnyDLBot.on_message(auth_users & fsticker)
+@AnyDLBot.on_message(filters.sticker & filters.user(Config.USER_IDS))
 async def DownloadStickersBot(_, update):
     if update.sticker.is_animated:
         await update.delete()

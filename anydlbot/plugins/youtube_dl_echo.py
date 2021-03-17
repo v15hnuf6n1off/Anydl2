@@ -3,12 +3,14 @@
 # (c) Shrimadhav U K
 
 import os
+import re
 
 import youtube_dl
+from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton, Message
 from pykeyboard import InlineKeyboard
 
-from anydlbot import LOGGER, auth_users, fregex
+from anydlbot import LOGGER
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
@@ -18,8 +20,12 @@ from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
 # the Strings used for this "thing"
 from translation import Translation
 
+regex = re.compile(
+    r"https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&/=]*)"
+)
 
-@AnyDLBot.on_message(auth_users & fregex)
+
+@AnyDLBot.on_message(filters.regex(regex) & filters.user(Config.USER_IDS))
 async def echo(_, update: Message):
     LOGGER.info(update.from_user)
     url, _, youtube_dl_username, youtube_dl_password = get_link(update)
@@ -110,8 +116,8 @@ async def echo(_, update: Message):
                 InlineKeyboardButton("file", cb_string_file),
             )
         # logger.info(reply_markup)
-        thumbnail = Config.DEF_THUMB_NAIL_VID_S
-        thumbnail_image = Config.DEF_THUMB_NAIL_VID_S
+        thumbnail = Config.DEFAULT_THUMBNAIL
+        thumbnail_image = Config.DEFAULT_THUMBNAIL
         save_thumbnail = os.path.join(
             Config.WORK_DIR, str(update.from_user.id) + ".jpg"
         )
@@ -152,7 +158,7 @@ async def echo(_, update: Message):
             InlineKeyboardButton("Document", cb_string_file),
         )
         await update.reply_photo(
-            photo=Config.DEF_THUMB_NAIL_VID_S,
+            photo=Config.DEFAULT_THUMBNAIL,
             quote=True,
             caption=Translation.FORMAT_SELECTION.format(""),
             reply_markup=ikeyboard,
