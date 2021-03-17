@@ -26,7 +26,7 @@ from pyrogram.types import InputMediaPhoto
 from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes, progress_for_pyrogram
-from anydlbot.helper_funcs.help_Nekmo_ffmpeg import generate_screen_shots
+from anydlbot.helper_funcs.ffmpeg_helper import generate_screenshots
 
 # the Strings used for this "thing"
 from translation import Translation
@@ -52,8 +52,8 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         else:
             if generatess:
                 is_w_f = False
-                images = await generate_screen_shots(
-                    current_file_name, tmp_directory_for_each_user, is_w_f, "", 300, 9
+                images = generate_screenshots(
+                    current_file_name, tmp_directory_for_each_user, 300, 9
                 )
                 LOGGER.info(images)
         # get the correct width, height, and duration
