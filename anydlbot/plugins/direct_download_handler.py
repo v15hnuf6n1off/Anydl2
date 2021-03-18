@@ -23,7 +23,7 @@ import aiohttp
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
-from anydlbot.helper_funcs.display_progress import TimeFormatter, humanbytes
+from anydlbot.helper_funcs.display_progress import time_formatter, humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.plugins.upload_handler import upload_worker
 
@@ -141,11 +141,12 @@ File Size: {}""".format(
                 diff = now - start
                 if round(diff % 5.00) == 0 or downloaded == total_length:
                     # percentage = downloaded * 100 / total_length
-                    speed = downloaded / diff
+                    elapsed_time = round(diff)
+                    if elapsed_time == 0:
+                        return
+                    speed = downloaded / elapsed_time
                     # elapsed_time = round(diff) * 1000
-                    time_to_completion = (
-                        round((total_length - downloaded) / speed) * 1000
-                    )
+                    time_to_completion = round((total_length - downloaded) / speed)
                     # estimated_total_time = elapsed_time + time_to_completion
                     try:
                         current_message = """**Download Status**
@@ -158,7 +159,7 @@ ETA: {}
                             url,
                             humanbytes(total_length),
                             humanbytes(downloaded),
-                            TimeFormatter(time_to_completion),
+                            time_formatter(time_to_completion),
                         )
                         if current_message != display_message:
                             await bot.edit_message_text(
