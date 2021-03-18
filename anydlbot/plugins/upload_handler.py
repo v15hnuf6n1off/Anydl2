@@ -51,7 +51,6 @@ async def upload_worker(update, filename, send_as, generatess, download_director
             )
         else:
             if generatess:
-                is_w_f = False
                 images = generate_screenshots(
                     current_file_name, tmp_directory_for_each_user, 300, 9
                 )
@@ -80,6 +79,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         else:
             thumb_image_path = None
         start_upload = datetime.now()
+        c_time = time.time()
         if send_as == "audio":
             await update.message.reply_audio(
                 audio=current_file_name,
@@ -91,7 +91,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 # reply_markup=reply_markup,
                 thumb=thumb_image_path,
                 progress=progress_for_pyrogram,
-                progress_args=(Translation.UPLOAD_START, update.message, time.time()),
+                progress_args=(Translation.UPLOAD_START, update.message, c_time),
             )
 
         elif send_as == "file":
@@ -102,7 +102,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 parse_mode="HTML",
                 # reply_markup=reply_markup,
                 progress=progress_for_pyrogram,
-                progress_args=(Translation.UPLOAD_START, update.message, time.time()),
+                progress_args=(Translation.UPLOAD_START, update.message, c_time),
             )
 
         elif send_as == "video":
@@ -117,7 +117,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 # reply_markup=reply_markup,
                 thumb=thumb_image_path,
                 progress=progress_for_pyrogram,
-                progress_args=(Translation.UPLOAD_START, update.message, time.time()),
+                progress_args=(Translation.UPLOAD_START, update.message, c_time),
             )
 
         else:

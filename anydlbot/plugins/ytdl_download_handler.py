@@ -23,7 +23,7 @@ import youtube_dl
 from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.extract_link import get_link
-from anydlbot.plugins.uploader import upload_worker
+from anydlbot.plugins.upload_handler import upload_worker
 
 # the Strings used for this "thing"
 from translation import Translation
@@ -32,7 +32,7 @@ from translation import Translation
 async def youtube_dl_call_back(_, update):
     cb_data = update.data
     # youtube_dl extractors
-    tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("|")
+    send_as, extractor_key, format_id, acodec = cb_data.split("|")
     thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
 
     (
@@ -57,6 +57,7 @@ async def youtube_dl_call_back(_, update):
         "nooverwrites": True,
         "continuedl": True,
         "noplaylist": True,
+        "restrictfilenames": True,
         "max_filesize": Config.TG_MAX_FILE_SIZE,
     }
     if youtube_dl_username and youtube_dl_password:
@@ -66,41 +67,40 @@ async def youtube_dl_call_back(_, update):
                 "password": youtube_dl_password,
             }
         )
-    if "hotstar" in youtube_dl_url:
+    if extractor_key == "HotStar":
         ytdl_opts.update(
             {
                 "geo_bypass_country": "IN",
             }
         )
-    if tg_send_type == "audio":
+    if send_as == "audio":
         ytdl_opts.update(
             {
                 "format": "bestaudio/best",
                 "postprocessors": [
                     {
                         "key": "FFmpegExtractAudio",
-                        "preferredcodec": youtube_dl_ext,
-                        "preferredquality": youtube_dl_format,
+                        "preferredcodec": acodec,
+                        "preferredquality": format_id,
                     },
                     {"key": "FFmpegMetadata"},
                 ],
             }
         )
-    elif tg_send_type in ["video", "file"]:
-        minus_f_format = youtube_dl_format
-        if "youtu" in youtube_dl_url:
-            minus_f_format = f"{youtube_dl_format}+bestaudio"
+    elif send_as in ["video", "file"]:
+        final_format = format_id
+        if extractor_key == "Youtube":
+            if acodec == "None":
+                final_format = f"{format_id}+bestaudio"
         ytdl_opts.update(
             {
-                "format": minus_f_format,
+                "format": final_format,
                 "postprocessors": [{"key": "FFmpegMetadata"}],
             }
         )
 
     start_download = datetime.now()
     with youtube_dl.YoutubeDL(ytdl_opts) as ytdl:
-        info = ytdl.extract_info(youtube_dl_url, download=False)
-        title = info.get("title", None)
         yt_task = ytdl.download([youtube_dl_url])
 
     if yt_task == 0:
@@ -110,7 +110,7 @@ async def youtube_dl_call_back(_, update):
             caption=f"Download took {time_taken_for_download} seconds.\n"
             + Translation.UPLOAD_START
         )
-        upl = await upload_worker(update, title, tg_send_type, True, download_directory)
+        upl = await upload_worker(update, "", send_as, True, download_directory)
         LOGGER.info(upl)
         shutil.rmtree(tmp_directory_for_each_user, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")

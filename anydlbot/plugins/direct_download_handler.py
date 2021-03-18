@@ -25,17 +25,17 @@ from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import TimeFormatter, humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
-from anydlbot.plugins.uploader import upload_worker
+from anydlbot.plugins.upload_handler import upload_worker
 
 # the Strings used for this "thing"
 from translation import Translation
 
 
-async def ddl_call_back(bot, update):
+async def direct_dl_callback(bot, update):
     LOGGER.info(update)
     cb_data = update.data
     # youtube_dl extractors
-    tg_send_type, youtube_dl_format, youtube_dl_ext = cb_data.split("=")
+    send_as, _, __, ___ = cb_data.split("=")
     thumb_image_path = Config.WORK_DIR + "/" + str(update.from_user.id) + ".jpg"
 
     (
@@ -91,7 +91,7 @@ async def ddl_call_back(bot, update):
         )
         try:
             upl = await upload_worker(
-                update, "none", tg_send_type, False, download_directory
+                update, "none", send_as, False, download_directory
             )
             LOGGER.info(upl)
         except:

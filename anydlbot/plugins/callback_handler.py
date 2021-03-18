@@ -18,8 +18,8 @@ from pyrogram.types import CallbackQuery
 
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
-from anydlbot.plugins.dl_button import ddl_call_back
-from anydlbot.plugins.youtube_dl_button import youtube_dl_call_back
+from anydlbot.plugins.direct_download_handler import direct_dl_callback
+from anydlbot.plugins.ytdl_download_handler import youtube_dl_call_back
 
 
 @AnyDLBot.on_callback_query()
@@ -37,4 +37,4 @@ async def button(anydlbot, update: CallbackQuery):
     if "|" in cb_data:
         await youtube_dl_call_back(anydlbot, update)
     elif "=" in cb_data:
-        await ddl_call_back(anydlbot, update)
+        await direct_dl_callback(anydlbot, update)
