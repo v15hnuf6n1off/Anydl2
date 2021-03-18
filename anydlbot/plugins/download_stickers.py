@@ -15,69 +15,68 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-import time
+from random import randint
+from zipfile import ZipFile
 
 from pyrogram import filters
 from PIL import Image
 
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
-from anydlbot.helper_funcs.display_progress import progress_for_pyrogram
 
 # the Strings used for this "thing"
 from translation import Translation
 
 
 @AnyDLBot.on_message(filters.sticker & filters.user(Config.USER_IDS))
-async def DownloadStickersBot(_, update):
-    if update.sticker.is_animated:
-        await update.delete()
-        return
+async def sticker_downloader(_, message):
+    """Copying @DownloadStickersBot"""
+    sticker = message.sticker
+    pack_name = sticker.set_name
+    pack_link = f"http://t.me/addstickers/{pack_name}"
+    sticker_ext = os.path.splitext(message.sticker.file_name)[1]
+    zipfile_name = f"{str(message.from_user.id)}_{pack_name}{sticker_ext}.zip"
+    zipfile_path = os.path.join(Config.WORK_DIR, zipfile_name)
+    temp_basename = randint(10000, 99999)
 
-    download_location = os.path.join(
-        Config.WORK_DIR,
-        str(update.from_user.id)
-        + "_DownloadStickersBot_"
-        + str(update.from_user.id)
-        + ".png",
-    )
-    a = await update.reply_text(
-        text=Translation.DOWNLOAD_START, reply_to_message_id=update.message_id
+    path_to_download = os.path.join(Config.WORK_DIR, str(temp_basename) + sticker_ext)
+    if not os.path.exists(Config.WORK_DIR):
+        os.makedirs(Config.WORK_DIR)
+
+    status = await message.reply_text(
+        text=Translation.DOWNLOAD_START, reply_to_message_id=message.message_id
     )
     try:
-        c_time = time.time()
-        the_real_download_location = await update.download(
-            file_name=download_location,
-            progress=progress_for_pyrogram,
-            progress_args=(Translation.DOWNLOAD_START, a, c_time),
+        download_location = await message.download(
+            file_name=path_to_download, progress_args=Translation.DOWNLOAD_START
         )
     except ValueError as e:
-        await a.edit_text(text=str(e))
+        await status.edit_text(text=str(e))
         return False
-    await a.edit_text(text=Translation.SAVED_RECVD_DOC_FILE)
-    # https://stackoverflow.com/a/21669827/4723940
-    Image.open(the_real_download_location).convert("RGB").save(
-        the_real_download_location
+    await status.edit_text(
+        text=Translation.STICKER_INFO.format(
+            sticker.set_name, sticker.emoji, sticker.file_id
+        )
     )
-    #
-    c_time = time.time()
-    await a.reply_document(
-        document=the_real_download_location,
-        # thumb=thumb_image_path,
-        # caption=description,
-        # reply_markup=reply_markup,
-        # reply_to_message_id=a.message_id,
-        progress=progress_for_pyrogram,
-        progress_args=(Translation.UPLOAD_START, a, c_time),
+
+    with ZipFile(zipfile_path, "w") as stickerZip:
+        stickerZip.write(download_location, os.path.basename(path_to_download))
+
+    if sticker_ext == ".webp":
+        file_path, ext = os.path.splitext(download_location)
+        png_location = os.path.join(file_path + ".png")
+        # https://stackoverflow.com/a/21669827/4723940
+        Image.open(download_location).convert("RGB").save(png_location, "PNG")
+
+        await status.reply_photo(
+            photo=png_location, reply_to_message_id=status.message_id
+        )
+        os.remove(png_location)
+
+    await status.reply_document(
+        document=zipfile_path, caption=pack_link, reply_to_message_id=status.message_id
     )
-    await a.reply_photo(
-        photo=the_real_download_location,
-        # thumb=thumb_image_path,
-        # caption=description,
-        # reply_markup=reply_markup,
-        # reply_to_message_id=a.message_id,
-        progress=progress_for_pyrogram,
-        progress_args=(Translation.UPLOAD_START, a, c_time),
-    )
-    os.remove(the_real_download_location)
-    await a.delete()
+
+    # Cleanup
+    os.remove(download_location)
+    os.remove(zipfile_path)

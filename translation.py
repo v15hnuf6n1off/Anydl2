@@ -84,3 +84,4 @@ Please short your file name and try again!"""
         "and include its complete output."
     )
     ISOAYD_PREMIUM_VIDEOS = "video is only available for registered users"
+    STICKER_INFO = "<u>Sticker Set Info</u>\nSet Name: {}\nEmoji: {}\nFile Id: {}"
