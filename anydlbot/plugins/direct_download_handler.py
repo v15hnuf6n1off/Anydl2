@@ -14,16 +14,14 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import asyncio
 import os
 import time
 from datetime import datetime
 
-import aiohttp
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
-from anydlbot.helper_funcs.display_progress import time_formatter, humanbytes
+from anydlbot.helper_funcs.aiohttp_helper import direct_downloader
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.plugins.upload_handler import upload_worker
 
@@ -39,13 +37,13 @@ async def direct_dl_callback(bot, update):
     thumb_image_path = Config.WORK_DIR + "/" + str(update.from_user.id) + ".jpg"
 
     (
-        youtube_dl_url,
+        url,
         custom_file_name,
         _,
         _,
     ) = get_link(update.message.reply_to_message)
     if not custom_file_name:
-        custom_file_name = os.path.basename(youtube_dl_url)
+        custom_file_name = os.path.basename(url)
 
     description = Translation.CUSTOM_CAPTION_UL_FILE
     start_download = datetime.now()
@@ -61,25 +59,19 @@ async def direct_dl_callback(bot, update):
         os.makedirs(tmp_directory_for_each_user)
     download_directory = os.path.join(tmp_directory_for_each_user, custom_file_name)
 
-    async with aiohttp.ClientSession() as session:
-        c_time = time.time()
-        try:
-            await download_coroutine(
-                bot,
-                session,
-                youtube_dl_url,
-                download_directory,
-                update.message.chat.id,
-                update.message.message_id,
-                c_time,
-            )
-        except asyncio.TimeoutError:
-            await bot.edit_message_text(
-                text=Translation.SLOW_URL_DECED,
-                chat_id=update.message.chat.id,
-                message_id=update.message.message_id,
-            )
-            return False
+    c_time = time.time()
+    try:
+        await direct_downloader(
+            bot,
+            url,
+            download_directory,
+            update.message.chat.id,
+            update.message.message_id,
+            c_time,
+        )
+    except:
+        return False
+
     if os.path.exists(download_directory):
         end_download = datetime.now()
         time_taken_for_download = (end_download - start_download).seconds
@@ -111,62 +103,3 @@ async def direct_dl_callback(bot, update):
             message_id=update.message.message_id,
             disable_web_page_preview=True,
         )
-
-
-async def download_coroutine(bot, session, url, file_name, chat_id, message_id, start):
-    downloaded = 0
-    display_message = ""
-    async with session.get(url, timeout=Config.PROCESS_MAX_TIMEOUT) as response:
-        total_length = int(response.headers["Content-Length"])
-        content_type = response.headers["Content-Type"]
-        if "text" in content_type and total_length < 500:
-            return await response.release()
-        await bot.edit_message_text(
-            chat_id,
-            message_id,
-            text="""Initiating Download
-URL: {}
-File Size: {}""".format(
-                url, humanbytes(total_length)
-            ),
-        )
-        with open(file_name, "wb") as f_handle:
-            while True:
-                chunk = await response.content.read(Config.CHUNK_SIZE)
-                if not chunk:
-                    break
-                f_handle.write(chunk)
-                downloaded += Config.CHUNK_SIZE
-                now = time.time()
-                diff = now - start
-                if round(diff % 5.00) == 0 or downloaded == total_length:
-                    # percentage = downloaded * 100 / total_length
-                    elapsed_time = round(diff)
-                    if elapsed_time == 0:
-                        return
-                    speed = downloaded / elapsed_time
-                    # elapsed_time = round(diff) * 1000
-                    time_to_completion = round((total_length - downloaded) / speed)
-                    # estimated_total_time = elapsed_time + time_to_completion
-                    try:
-                        current_message = """**Download Status**
-URL: {}
-File Size: {}
-Downloaded: {}
-ETA: {}
-
-©️ @AnyDLBot""".format(
-                            url,
-                            humanbytes(total_length),
-                            humanbytes(downloaded),
-                            time_formatter(time_to_completion),
-                        )
-                        if current_message != display_message:
-                            await bot.edit_message_text(
-                                chat_id, message_id, text=current_message
-                            )
-                            display_message = current_message
-                    except Exception as e:
-                        LOGGER.info(str(e))
-                        pass
-        return await response.release()
