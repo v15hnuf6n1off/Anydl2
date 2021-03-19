@@ -24,7 +24,7 @@ from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes, time_formatter
 
 
-async def direct_downloader(bot, url, file_name, chat_id, message_id, start):
+async def direct_downloader(url, file_name, message, start):
     async with aiohttp.ClientSession() as session:
         display_message = ""
         async with session.get(url, timeout=Config.PROCESS_MAX_TIMEOUT) as response:
@@ -32,9 +32,7 @@ async def direct_downloader(bot, url, file_name, chat_id, message_id, start):
             content_type = response.headers["Content-Type"]
             if "text" in content_type and total_length < 500:
                 return await response.release()
-            await bot.edit_message_text(
-                chat_id,
-                message_id,
+            await message.edit_text(
                 text=f"Initiating Download \nURL: {url} \nFile Size: {humanbytes(total_length)}",
             )
             with open(file_name, "wb") as f_handle:
@@ -63,9 +61,7 @@ async def direct_downloader(bot, url, file_name, chat_id, message_id, start):
                                 f"ETA: {time_formatter(time_to_completion)}\n"
                             )
                             if current_message != display_message:
-                                await bot.edit_message_text(
-                                    chat_id, message_id, text=current_message
-                                )
+                                await message.edit_text(text=current_message)
                                 display_message = current_message
                         except Exception as e:
                             LOGGER.info(str(e))

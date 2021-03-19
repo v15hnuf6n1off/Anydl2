@@ -62,11 +62,9 @@ async def direct_dl_callback(bot, update):
     c_time = time.time()
     try:
         await direct_downloader(
-            bot,
             url,
             download_directory,
-            update.message.chat.id,
-            update.message.message_id,
+            update.message,
             c_time,
         )
     except:
