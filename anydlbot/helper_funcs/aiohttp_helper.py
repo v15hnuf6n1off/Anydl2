@@ -17,6 +17,7 @@
 import time
 
 import aiohttp
+from PIL import Image
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
@@ -69,3 +70,19 @@ async def direct_downloader(bot, url, file_name, chat_id, message_id, start):
                         except Exception as e:
                             LOGGER.info(str(e))
             return await response.release()
+
+
+# https://github.com/SpEcHiDe/PublicLeech/blob/master/tobrot/helper_funcs/fix_tcerrocni_images.py
+async def get_thumbnail(image_url: str, output_filepath: str) -> str:
+    async with aiohttp.ClientSession() as session:
+        image_url = await session.get(image_url)
+        image_content = await image_url.read()
+
+        with open(output_filepath, "wb") as f_d:
+            f_d.write(image_content)
+    # image might be downloaded in the previous step
+    # https://stackoverflow.com/a/21669827/4723940
+    Image.open(output_filepath).convert("RGB").save(output_filepath, "JPEG")
+    # ref: https://t.me/PyrogramChat/44663
+    # return the downloaded image path
+    return output_filepath

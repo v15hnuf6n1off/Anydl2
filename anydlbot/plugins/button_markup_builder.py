@@ -27,7 +27,7 @@ from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
-from anydlbot.helper_funcs.help_uploadbot import DownLoadFile
+from anydlbot.helper_funcs.aiohttp_helper import get_thumbnail
 
 # the Strings used for this "thing"
 from translation import Translation
@@ -155,15 +155,7 @@ async def echo(_, message):
         if os.path.exists(save_thumbnail):
             thumb_image_path = save_thumbnail
         else:
-            thumb_image_path = DownLoadFile(
-                thumbnail,
-                save_thumbnail,
-                128,
-                None,  # bot,
-                Translation.DOWNLOAD_START,
-                message.message_id,
-                message.chat.id,
-            )
+            thumb_image_path = await get_thumbnail(thumbnail, save_thumbnail)
         await message.reply_photo(
             photo=thumb_image_path,
             quote=True,
