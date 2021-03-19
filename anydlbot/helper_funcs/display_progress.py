@@ -14,13 +14,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
 import math
 import time
+
+from pyrogram.errors import FloodWait
 
 from anydlbot.config import Config
 
 
-async def progress_for_pyrogram(current, total, ud_type, message, start):
+async def progress_for_pyrogram(current, total, status_text, message, start):
     now = time.time()
     diff = now - start
     if round(diff % 10.00) == 0 or current == total:
@@ -33,7 +36,7 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
 
         estimated_total_time = time_formatter(time_to_completion)
 
-        progress = "[{}{}]\n".format(
+        progress_block = "[{}{}]\n".format(
             "".join(
                 Config.FINISHED_PROGRESS_BLOCK
                 for _ in range(math.floor(percentage / 5))
@@ -44,17 +47,16 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
             ),
         )
 
-
-        tmp = progress + "Uploading {} of {} at {}/s, ETA: {}\n".format(
-            humanbytes(current),
-            humanbytes(total),
-            humanbytes(speed),
-            estimated_total_time if estimated_total_time != "" else "0 seconds",
+        progress_text = (
+            f"{progress_block}"
+            f"Uploading {humanbytes(current)} of "
+            f"{humanbytes(total)} at {humanbytes(speed)}/s\n"
+            f"ETA: {estimated_total_time}\n"
         )
         try:
-            await message.edit_text(f"{ud_type}\n {tmp}")
-        except:
-            pass
+            await message.edit_text(f"{status_text}\n {progress_text}")
+        except FloodWait as e:
+            await asyncio.sleep(e.x)
 
 
 def humanbytes(size):
