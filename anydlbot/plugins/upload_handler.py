@@ -63,9 +63,8 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         duration = 0
         if send_as != "file":
             metadata = extractMetadata(createParser(current_file_name))
-            if metadata is not None:
-                if metadata.has("duration"):
-                    duration = metadata.get("duration").seconds
+            if metadata is not None and metadata.has("duration"):
+                duration = metadata.get("duration").seconds
         # get the correct width, height, and duration
         # for videos greater than 10MB
         if os.path.exists(thumb_image_path):
@@ -138,7 +137,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                         )
                     else:
                         media_album_p.append(InputMediaPhoto(media=image))
-                    i = i + 1
+                    i += 1
         await update.message.reply_media_group(
             media=media_album_p, disable_notification=True
         )

@@ -89,9 +89,8 @@ async def youtube_dl_call_back(_, update):
         )
     elif send_as in ["video", "file"]:
         final_format = format_id
-        if extractor_key == "Youtube":
-            if acodec == "None":
-                final_format = f"{format_id}+bestaudio"
+        if extractor_key == "Youtube" and acodec == "None":
+            final_format = f"{format_id}+bestaudio"
         ytdl_opts.update(
             {
                 "format": final_format,

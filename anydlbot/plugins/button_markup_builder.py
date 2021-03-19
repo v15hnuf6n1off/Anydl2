@@ -67,7 +67,7 @@ async def echo(_, message):
         ikeyboard = InlineKeyboard()
 
         thumb_image = info.get("thumbnail", None)
-        thumbnail = thumb_image if thumb_image else Config.DEFAULT_THUMBNAIL
+        thumbnail = thumb_image or Config.DEFAULT_THUMBNAIL
 
         extractor_key = info.get("extractor_key", "Generic")
         duration = info.get("duration", None)

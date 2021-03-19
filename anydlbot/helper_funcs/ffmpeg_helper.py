@@ -37,7 +37,7 @@ def screencapture(input_file, output_dir, seek_time):
     except ffmpeg.Error as e:
         LOGGER.info(e.stderr.decode())
     finally:
-        return output_file if output_file else None
+        return output_file or None
 
 
 def generate_screenshots(input_file, output_dir, min_duration, no_of_photos):
@@ -49,7 +49,7 @@ def generate_screenshots(input_file, output_dir, min_duration, no_of_photos):
         images = []
         ttl_step = duration // no_of_photos
         current_ttl = ttl_step
-        for _ in range(0, no_of_photos):
+        for _ in range(no_of_photos):
             ss_img = screencapture(input_file, output_dir, current_ttl)
             current_ttl = current_ttl + ttl_step
             if ss_img is not None:

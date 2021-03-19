@@ -35,18 +35,15 @@ async def progress_for_pyrogram(current, total, ud_type, message, start):
 
         progress = "[{}{}]\n".format(
             "".join(
-                [
-                    Config.FINISHED_PROGRESS_BLOCK
-                    for _ in range(math.floor(percentage / 5))
-                ]
+                Config.FINISHED_PROGRESS_BLOCK
+                for _ in range(math.floor(percentage / 5))
             ),
             "".join(
-                [
-                    Config.UNFINISHED_PROGRESS_BLOCK
-                    for _ in range(20 - math.floor(percentage / 5))
-                ]
+                Config.UNFINISHED_PROGRESS_BLOCK
+                for _ in range(20 - math.floor(percentage / 5))
             ),
         )
+
 
         tmp = progress + "Uploading {} of {} at {}/s, ETA: {}\n".format(
             humanbytes(current),
@@ -75,8 +72,7 @@ def time_formatter(seconds: int) -> str:
     v_m = 0
     remainder = seconds
     r_ange_s = {"days": (24 * 60 * 60), "hours": (60 * 60), "minutes": 60, "seconds": 1}
-    for age in r_ange_s:
-        divisor = r_ange_s[age]
+    for age, divisor in r_ange_s.items():
         v_m, remainder = divmod(remainder, divisor)
         v_m = int(v_m)
         if v_m != 0:
