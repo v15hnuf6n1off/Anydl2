@@ -22,7 +22,15 @@ def get_link(update: Message):
     youtube_dl_username = None
     youtube_dl_password = None
     file_name = None
-    if "|" in url:
+    if "|" not in url:
+        for entity in update.entities:
+            if entity.type == "text_link":
+                url = entity.url
+            elif entity.type == "url":
+                o_ = entity.offset
+                l_ = entity.length
+                url = url[o_: o_ + l_]
+    else:
         url_parts = url.split("|")
         if len(url_parts) == 2:
             url = url_parts[0]
@@ -32,14 +40,6 @@ def get_link(update: Message):
             file_name = url_parts[1]
             youtube_dl_username = url_parts[2]
             youtube_dl_password = url_parts[3]
-        else:
-            for entity in update.entities:
-                if entity.type == "text_link":
-                    url = entity.url
-                elif entity.type == "url":
-                    o_ = entity.offset
-                    l_ = entity.length
-                    url = url[o_: o_ + l_]
         if url is not None:
             url = url.strip()
         if file_name is not None:
@@ -51,13 +51,5 @@ def get_link(update: Message):
             youtube_dl_password = youtube_dl_password.strip()
         # LOGGER.info(url)
         # LOGGER.info(file_name)
-    else:
-        for entity in update.entities:
-            if entity.type == "text_link":
-                url = entity.url
-            elif entity.type == "url":
-                o_ = entity.offset
-                l_ = entity.length
-                url = url[o_: o_ + l_]
 
     return url, file_name, youtube_dl_username, youtube_dl_password
