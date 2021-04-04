@@ -24,9 +24,7 @@ from anydlbot.config import Config
 from anydlbot.helper_funcs.aiohttp_helper import direct_downloader
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.plugins.upload_handler import upload_worker
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 
 async def direct_dl_callback(bot, update):
@@ -45,10 +43,10 @@ async def direct_dl_callback(bot, update):
     if not custom_file_name:
         custom_file_name = os.path.basename(url)
 
-    description = Translation.CUSTOM_CAPTION_UL_FILE
+    description = String.CUSTOM_CAPTION_UL_FILE
     start_download = datetime.now()
     await bot.edit_message_text(
-        text=Translation.DOWNLOAD_START,
+        text=String.DOWNLOAD_START,
         chat_id=update.message.chat.id,
         message_id=update.message.message_id,
     )
@@ -75,7 +73,7 @@ async def direct_dl_callback(bot, update):
         time_taken_for_download = (end_download - start_download).seconds
         await bot.edit_message_text(
             text=f"Download took {time_taken_for_download} seconds.\n"
-            + Translation.UPLOAD_START,
+            + String.UPLOAD_START,
             chat_id=update.message.chat.id,
             message_id=update.message.message_id,
         )
@@ -96,7 +94,7 @@ async def direct_dl_callback(bot, update):
 
     else:
         await bot.edit_message_text(
-            text=Translation.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),
+            text=String.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),
             chat_id=update.message.chat.id,
             message_id=update.message.message_id,
             disable_web_page_preview=True,

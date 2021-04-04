@@ -23,9 +23,7 @@ from PIL import Image
 
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 
 @AnyDLBot.on_message(filters.sticker & filters.user(Config.USER_IDS))
@@ -44,17 +42,17 @@ async def sticker_downloader(_, message):
         os.makedirs(Config.WORK_DIR)
 
     status = await message.reply_text(
-        text=Translation.DOWNLOAD_START, reply_to_message_id=message.message_id
+        text=String.DOWNLOAD_START, reply_to_message_id=message.message_id
     )
     try:
         download_location = await message.download(
-            file_name=path_to_download, progress_args=Translation.DOWNLOAD_START
+            file_name=path_to_download, progress_args=String.DOWNLOAD_START
         )
     except ValueError as e:
         await status.edit_text(text=str(e))
         return False
     await status.edit_text(
-        text=Translation.STICKER_INFO.format(
+        text=String.STICKER_INFO.format(
             sticker.set_name, sticker.emoji, sticker.file_id
         )
     )

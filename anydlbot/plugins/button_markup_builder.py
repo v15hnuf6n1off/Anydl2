@@ -28,9 +28,7 @@ from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.helper_funcs.aiohttp_helper import get_thumbnail
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 regex = re.compile(
     r"https?://(www\.)?[-a-zA-Z0-9@:%._+~#=]{1,256}\.[a-zA-Z0-9()]{1,6}\b([-a-zA-Z0-9()!@:%_+.~#?&/=]*)"
@@ -100,9 +98,7 @@ async def echo(_, message):
                     and "audio only" not in format_string
                 ):
                     ikeyboard.row(
-                        InlineKeyboardButton(
-                            display_str, callback_data=cb_string_video
-                        )
+                        InlineKeyboardButton(display_str, callback_data=cb_string_video)
                     )
                 elif extractor_key != "GoogleDrive":
                     # special weird case :\
@@ -130,7 +126,9 @@ async def echo(_, message):
             format_ext = info.get("ext")
             cb_string_file = f"file={extractor_key}={format_id}={format_ext}"
             ikeyboard.row(
-                InlineKeyboardButton(f"File [{format_ext.upper()}]", callback_data=cb_string_file),
+                InlineKeyboardButton(
+                    f"File [{format_ext.upper()}]", callback_data=cb_string_file
+                ),
             )
 
         save_thumbnail = os.path.join(
@@ -146,9 +144,9 @@ async def echo(_, message):
         await message.reply_photo(
             photo=thumb_image_path,
             quote=True,
-            caption=Translation.FORMAT_SELECTION.format(thumbnail)
+            caption=String.FORMAT_SELECTION.format(thumbnail)
             + "\n"
-            + Translation.SET_CUSTOM_USERNAME_PASSWORD,
+            + String.SET_CUSTOM_USERNAME_PASSWORD,
             reply_markup=ikeyboard,
             parse_mode="html",
         )
@@ -162,7 +160,7 @@ async def echo(_, message):
         await message.reply_photo(
             photo=Config.DEFAULT_THUMBNAIL,
             quote=True,
-            caption=Translation.FORMAT_SELECTION.format(""),
+            caption=String.FORMAT_SELECTION.format(""),
             reply_markup=ikeyboard,
             parse_mode="html",
             reply_to_message_id=message.message_id,

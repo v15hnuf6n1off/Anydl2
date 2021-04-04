@@ -24,9 +24,7 @@ from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.plugins.upload_handler import upload_worker
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 
 async def youtube_dl_call_back(_, update):
@@ -44,7 +42,7 @@ async def youtube_dl_call_back(_, update):
     ) = get_link(update.message.reply_to_message)
     if not custom_file_name:
         custom_file_name = "%(title)s.%(ext)s"
-    await update.message.edit_caption(caption=Translation.DOWNLOAD_START)
+    await update.message.edit_caption(caption=String.DOWNLOAD_START)
     # description = Translation.CUSTOM_CAPTION_UL_FILE
     tmp_directory_for_each_user = os.path.join(
         Config.WORK_DIR, str(update.from_user.id)
@@ -108,7 +106,7 @@ async def youtube_dl_call_back(_, update):
         time_taken_for_download = (end_download - start_download).seconds
         await update.message.edit_caption(
             caption=f"Download took {time_taken_for_download} seconds.\n"
-            + Translation.UPLOAD_START
+            + String.UPLOAD_START
         )
         upl = await upload_worker(update, "", send_as, True, download_directory)
         LOGGER.info(upl)

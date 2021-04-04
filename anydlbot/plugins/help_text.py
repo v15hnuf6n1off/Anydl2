@@ -17,9 +17,7 @@
 from pyrogram import filters
 
 from anydlbot.bot import AnyDLBot
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 
 @AnyDLBot.on_message(filters.command(["help", "about"]))
@@ -27,7 +25,7 @@ async def help_user(bot, update):
     # LOGGER.info(update)
     await bot.send_message(
         chat_id=update.chat.id,
-        text=Translation.HELP_USER,
+        text=String.HELP_USER,
         parse_mode="html",
         disable_web_page_preview=True,
         reply_to_message_id=update.message_id,
@@ -39,6 +37,6 @@ async def start(bot, update):
     # LOGGER.info(update)
     await bot.send_message(
         chat_id=update.chat.id,
-        text=Translation.START_TEXT,
+        text=String.START_TEXT,
         reply_to_message_id=update.message_id,
     )

@@ -27,9 +27,7 @@ from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes, progress_for_pyrogram
 from anydlbot.helper_funcs.ffmpeg_helper import generate_screenshots
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 
 async def upload_worker(update, filename, send_as, generatess, download_directory):
@@ -47,7 +45,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
 
         if file_size > Config.TG_MAX_FILE_SIZE:
             await update.message.edit_caption(
-                caption=Translation.RCHD_TG_API_LIMIT.format(humanbytes(file_size))
+                caption=String.RCHD_TG_API_LIMIT.format(humanbytes(file_size))
             )
         else:
             if generatess:
@@ -90,7 +88,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 # reply_markup=reply_markup,
                 thumb=thumb_image_path,
                 progress=progress_for_pyrogram,
-                progress_args=(Translation.UPLOAD_START, update.message, c_time),
+                progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
         elif send_as == "file":
@@ -101,7 +99,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 parse_mode="HTML",
                 # reply_markup=reply_markup,
                 progress=progress_for_pyrogram,
-                progress_args=(Translation.UPLOAD_START, update.message, c_time),
+                progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
         elif send_as == "video":
@@ -116,7 +114,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 # reply_markup=reply_markup,
                 thumb=thumb_image_path,
                 progress=progress_for_pyrogram,
-                progress_args=(Translation.UPLOAD_START, update.message, c_time),
+                progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
         else:

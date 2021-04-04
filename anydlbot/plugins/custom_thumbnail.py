@@ -20,9 +20,7 @@ from pyrogram import filters
 
 from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
-
-# the Strings used for this "thing"
-from translation import Translation
+from strings import String
 
 
 @AnyDLBot.on_message(filters.photo & filters.user(Config.USER_IDS))
@@ -31,7 +29,7 @@ async def save_photo(bot, update):
     await bot.download_media(message=update, file_name=download_location)
     await bot.send_message(
         chat_id=update.chat.id,
-        text=Translation.SAVED_CUSTOM_THUMB_NAIL,
+        text=String.SAVED_CUSTOM_THUMBNAIL,
         reply_to_message_id=update.message_id,
     )
 
@@ -46,6 +44,6 @@ async def delete_thumbnail(bot, update):
         pass
     await bot.send_message(
         chat_id=update.chat.id,
-        text=Translation.DEL_ETED_CUSTOM_THUMB_NAIL,
+        text=String.DELETED_CUSTOM_THUMB_NAIL,
         reply_to_message_id=update.message_id,
     )
