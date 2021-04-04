@@ -87,27 +87,23 @@ async def echo(_, message):
                     if formats.get("filesize")
                     else ""
                 )
-                special_display_str = (
+                display_str = (
                     f"{format_string} [{format_ext.upper()}] {approx_file_size}"
                 )
                 cb_string_video = f"video|{extractor_key}|{format_id}|{acodec}"
-                cb_string_document = f"document|{extractor_key}|{format_id}|{acodec}"
                 # GDrive gets special pass, acodec is not listed here, ie acodec=None
                 if extractor_key == "GoogleDrive":
                     if format_id == "source":
                         ikeyboard.row(
                             InlineKeyboardButton(
-                                special_display_str, callback_data=cb_string_video
+                                display_str, callback_data=cb_string_video
                             )
                         )
                 else:
                     if format_string and "audio only" not in format_string:
                         ikeyboard.row(
                             InlineKeyboardButton(
-                                f"{format_string} Video {format_ext}", cb_string_video
-                            ),
-                            InlineKeyboardButton(
-                                f"Document {approx_file_size}", cb_string_document
+                                display_str, callback_data=cb_string_video
                             ),
                         )
                     else:
@@ -115,9 +111,6 @@ async def echo(_, message):
                         ikeyboard.row(
                             InlineKeyboardButton(
                                 f"Video {approx_file_size}", cb_string_video
-                            ),
-                            InlineKeyboardButton(
-                                f"Document {approx_file_size}", cb_string_document
                             ),
                         )
             if duration:
@@ -137,13 +130,9 @@ async def echo(_, message):
         else:
             format_id = info.get("format_id")
             format_ext = info.get("ext")
-            cb_string_video = f"video={extractor_key}={format_id}={format_ext}"
-            cb_string_document = f"document={extractor_key}={format_id}={format_ext}"
+            cb_string_file = f"file={extractor_key}={format_id}={format_ext}"
             ikeyboard.row(
-                InlineKeyboardButton(f"Video [{format_ext.upper()}]", cb_string_video),
-                InlineKeyboardButton(
-                    f"Document [{format_ext.upper()}]", cb_string_document
-                ),
+                InlineKeyboardButton(f"File [{format_ext.upper()}]", callback_data=cb_string_file),
             )
 
         save_thumbnail = os.path.join(
@@ -169,10 +158,8 @@ async def echo(_, message):
         # fallback for nonnumeric port a.k.a seedbox.io
         ikeyboard = InlineKeyboard()
         cb_string_file = "file=LFO=NONE=NONE"
-        cb_string_video = "video=OFL=ENON=NONE"
         ikeyboard.row(
-            InlineKeyboardButton("Video", cb_string_video),
-            InlineKeyboardButton("Document", cb_string_file),
+            InlineKeyboardButton("File", callback_data=cb_string_file),
         )
         await message.reply_photo(
             photo=Config.DEFAULT_THUMBNAIL,
