@@ -30,8 +30,8 @@ from translation import Translation
 
 
 async def direct_dl_callback(bot, update):
-    LOGGER.info(update)
     cb_data = update.data
+    LOGGER.info(cb_data)
     # youtube_dl extractors
     send_as, _, __, ___ = cb_data.split("=")
     thumb_image_path = Config.WORK_DIR + "/" + str(update.from_user.id) + ".jpg"

@@ -31,6 +31,7 @@ from translation import Translation
 
 async def youtube_dl_call_back(_, update):
     cb_data = update.data
+    LOGGER.info(cb_data)
     # youtube_dl extractors
     send_as, extractor_key, format_id, acodec = cb_data.split("|")
     thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
