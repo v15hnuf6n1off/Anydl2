@@ -92,27 +92,25 @@ async def echo(_, message):
                 )
                 cb_string_video = f"video|{extractor_key}|{format_id}|{acodec}"
                 # GDrive gets special pass, acodec is not listed here, ie acodec=None
-                if extractor_key == "GoogleDrive":
-                    if format_id == "source":
-                        ikeyboard.row(
-                            InlineKeyboardButton(
-                                display_str, callback_data=cb_string_video
-                            )
+                if (
+                    extractor_key == "GoogleDrive"
+                    and format_id == "source"
+                    or extractor_key != "GoogleDrive"
+                    and format_string
+                    and "audio only" not in format_string
+                ):
+                    ikeyboard.row(
+                        InlineKeyboardButton(
+                            display_str, callback_data=cb_string_video
                         )
-                else:
-                    if format_string and "audio only" not in format_string:
-                        ikeyboard.row(
-                            InlineKeyboardButton(
-                                display_str, callback_data=cb_string_video
-                            ),
-                        )
-                    else:
-                        # special weird case :\
-                        ikeyboard.row(
-                            InlineKeyboardButton(
-                                f"Video {approx_file_size}", cb_string_video
-                            ),
-                        )
+                    )
+                elif extractor_key != "GoogleDrive":
+                    # special weird case :\
+                    ikeyboard.row(
+                        InlineKeyboardButton(
+                            f"Video {approx_file_size}", cb_string_video
+                        ),
+                    )
             if duration:
                 ikeyboard.row(
                     InlineKeyboardButton(
