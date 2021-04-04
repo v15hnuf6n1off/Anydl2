@@ -50,7 +50,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         else:
             if generatess:
                 images = generate_screenshots(
-                    current_file_name, tmp_directory_for_each_user, 300, 9
+                    current_file_name, tmp_directory_for_each_user, 300, 5
                 )
                 LOGGER.info(images)
         # get the correct width, height, and duration
