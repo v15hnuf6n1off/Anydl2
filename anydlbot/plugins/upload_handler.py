@@ -80,7 +80,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         if send_as == "audio":
             await update.message.reply_audio(
                 audio=current_file_name,
-                caption=os.path.basename(current_file_name),
+                caption=filename,
                 parse_mode="HTML",
                 duration=duration,
                 # performer=response_json["uploader"],
@@ -95,7 +95,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
             await update.message.reply_document(
                 document=current_file_name,
                 thumb=thumb_image_path,
-                caption=os.path.basename(current_file_name),
+                caption=filename,
                 parse_mode="HTML",
                 # reply_markup=reply_markup,
                 progress=progress_for_pyrogram,
@@ -105,7 +105,7 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         elif send_as == "video":
             await update.message.reply_video(
                 video=current_file_name,
-                caption=os.path.basename(current_file_name),
+                caption=filename,
                 parse_mode="HTML",
                 duration=duration,
                 width=width,

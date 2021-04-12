@@ -137,7 +137,7 @@ async def youtube_dl_call_back(_, update):
             caption=f"Download took {time_taken_for_download} seconds.\n"
             + String.UPLOAD_START
         )
-        upl = await upload_worker(update, "", send_as, True, download_directory)
+        upl = await upload_worker(update, info.get("title", ""), send_as, True, download_directory)
         LOGGER.info(upl)
         shutil.rmtree(tmp_directory_for_each_user, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")

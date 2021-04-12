@@ -79,7 +79,7 @@ async def direct_dl_callback(bot, update):
         )
         try:
             upl = await upload_worker(
-                update, "none", send_as, False, download_directory
+                update, custom_file_name, send_as, False, download_directory
             )
             LOGGER.info(upl)
         except:
