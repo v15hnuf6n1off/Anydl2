@@ -28,6 +28,7 @@ from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.helper_funcs.aiohttp_helper import get_thumbnail
+from anydlbot.plugins.ytdl_download_handler import yt_extract_info
 from strings import String
 
 regex = re.compile(
@@ -54,12 +55,16 @@ async def echo(_, message):
                 "geo_bypass_country": "IN",
             }
         )
-    with youtube_dl.YoutubeDL(info_dict) as ytdl:
-        try:
-            info = ytdl.extract_info(url, download=False)
-        except youtube_dl.utils.DownloadError as ytdl_error:
-            await message.reply_text(text=str(ytdl_error), quote=True)
-            return False
+    try:
+        info = await yt_extract_info(
+            video_url=url,
+            download=False,
+            ytdl_opts=info_dict,
+            ie_key="Generic",
+        )
+    except youtube_dl.utils.DownloadError as ytdl_error:
+        await message.reply_text(text=str(ytdl_error), quote=True)
+        return False
 
     if info:
         ikeyboard = InlineKeyboard()

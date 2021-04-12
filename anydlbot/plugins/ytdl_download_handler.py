@@ -17,6 +17,9 @@
 import os
 import shutil
 from datetime import datetime
+import asyncio
+import functools
+from concurrent.futures import ThreadPoolExecutor
 
 import youtube_dl
 
@@ -25,6 +28,24 @@ from anydlbot.config import Config
 from anydlbot.helper_funcs.extract_link import get_link
 from anydlbot.plugins.upload_handler import upload_worker
 from strings import String
+
+
+# https://stackoverflow.com/a/64506715
+def run_in_executor(_func):
+    @functools.wraps(_func)
+    async def wrapped(*args, **kwargs):
+        loop = asyncio.get_event_loop()
+        func = functools.partial(_func, *args, **kwargs)
+        return await loop.run_in_executor(executor=ThreadPoolExecutor(), func=func)
+
+    return wrapped
+
+
+@run_in_executor
+def yt_extract_info(video_url, download, ytdl_opts, ie_key):
+    with youtube_dl.YoutubeDL(ytdl_opts) as ytdl:
+        info = ytdl.extract_info(video_url, download=download, ie_key=ie_key)
+    return info
 
 
 async def youtube_dl_call_back(_, update):
@@ -98,10 +119,18 @@ async def youtube_dl_call_back(_, update):
         )
 
     start_download = datetime.now()
-    with youtube_dl.YoutubeDL(ytdl_opts) as ytdl:
-        yt_task = ytdl.download([youtube_dl_url])
+    try:
+        info = await yt_extract_info(
+            video_url=youtube_dl_url,
+            download=True,
+            ytdl_opts=ytdl_opts,
+            ie_key=extractor_key,
+        )
+    except youtube_dl.utils.DownloadError as ytdl_error:
+        await update.message.edit_caption(caption=str(ytdl_error))
+        return False
 
-    if yt_task == 0:
+    if info:
         end_download = datetime.now()
         time_taken_for_download = (end_download - start_download).seconds
         await update.message.edit_caption(
