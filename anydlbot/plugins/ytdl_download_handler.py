@@ -31,7 +31,7 @@ async def youtube_dl_call_back(_, update):
     cb_data = update.data
     LOGGER.info(cb_data)
     # youtube_dl extractors
-    send_as, extractor_key, format_id, acodec = cb_data.split("|")
+    send_as, extractor_key, format_id, av_codec = cb_data.split("|")
     thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
 
     (
@@ -79,7 +79,7 @@ async def youtube_dl_call_back(_, update):
                 "postprocessors": [
                     {
                         "key": "FFmpegExtractAudio",
-                        "preferredcodec": acodec,
+                        "preferredcodec": av_codec,
                         "preferredquality": format_id,
                     },
                     {"key": "FFmpegMetadata"},
@@ -88,7 +88,7 @@ async def youtube_dl_call_back(_, update):
         )
     elif send_as == "video":
         final_format = format_id
-        if extractor_key == "Youtube" and acodec == "None":
+        if extractor_key == "Youtube" and av_codec == "none":
             final_format = f"{format_id}+bestaudio"
         ytdl_opts.update(
             {

@@ -79,7 +79,9 @@ async def echo(_, message):
                 if "DASH" in format_string.upper():
                     continue
                 format_ext = formats.get("ext")
-                acodec = formats.get("acodec", None)
+                av_codec = "empty"
+                if formats.get("acodec") == "none" or formats.get("vcodec") == "none":
+                    av_codec = "none"
                 approx_file_size = (
                     humanbytes(formats.get("filesize"))
                     if formats.get("filesize")
@@ -88,7 +90,7 @@ async def echo(_, message):
                 display_str = (
                     f"{format_string} [{format_ext.upper()}] {approx_file_size}"
                 )
-                cb_string_video = f"video|{extractor_key}|{format_id}|{acodec}"
+                cb_string_video = f"video|{extractor_key}|{format_id}|{av_codec}"
                 # GDrive gets special pass, acodec is not listed here, ie acodec=None
                 if (
                     extractor_key == "GoogleDrive"
