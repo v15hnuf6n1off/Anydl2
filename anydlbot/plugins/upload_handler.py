@@ -47,12 +47,8 @@ async def upload_worker(update, filename, send_as, generatess, download_director
             await update.message.edit_caption(
                 caption=String.RCHD_TG_API_LIMIT.format(humanbytes(file_size))
             )
-        else:
-            if generatess:
-                images = generate_screenshots(
-                    current_file_name, tmp_directory_for_each_user, 300, 5
-                )
-                LOGGER.info(images)
+            return
+
         # get the correct width, height, and duration
         # for videos greater than 10MB
         # ref: message from @BotSupport
@@ -122,7 +118,11 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         end_upload = datetime.now()
         time_taken_for_upload = (end_upload - start_upload).seconds
         media_album_p = []
-        if generatess and images:
+        if generatess:
+            images = generate_screenshots(
+                current_file_name, tmp_directory_for_each_user, 300, 5
+            )
+            LOGGER.info(images)
             i = 0
             caption = f"© @AnyDLBot - Uploaded in {time_taken_for_upload} seconds"
             for image in images:
