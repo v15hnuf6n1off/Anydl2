@@ -47,14 +47,12 @@ async def direct_downloader(url, file_name, message, start):
                     downloaded += Config.CHUNK_SIZE
                     now = time.time()
                     diff = now - start
-                    if round(diff % 5.00) == 0 or downloaded == total_length:
+                    if round(diff % 10.00) == 0 or downloaded == total_length:
                         elapsed_time = round(diff)
                         if elapsed_time == 0:
                             return
                         speed = downloaded / elapsed_time
-                        time_to_completion = (
-                            round((total_length - downloaded) / speed) * 1000
-                        )
+                        time_to_completion = round((total_length - downloaded) / speed)
                         try:
                             current_message = f"URL: {url}\n"
                             current_message += (
