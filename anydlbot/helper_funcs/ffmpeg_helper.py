@@ -17,8 +17,6 @@
 import time
 
 import ffmpeg
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
 
 from anydlbot import LOGGER
 
@@ -40,18 +38,13 @@ def screencapture(input_file, output_dir, seek_time):
         return output_file or None
 
 
-def generate_screenshots(input_file, output_dir, min_duration, no_of_photos):
-    metadata = extractMetadata(createParser(input_file))
-    duration = 0
-    if metadata and metadata.has("duration"):
-        duration = metadata.get("duration").seconds
-    if duration > min_duration:
-        images = []
-        ttl_step = duration // no_of_photos
-        current_ttl = ttl_step
-        for _ in range(no_of_photos):
-            ss_img = screencapture(input_file, output_dir, current_ttl)
-            current_ttl = current_ttl + ttl_step
-            if ss_img is not None:
-                images.append(ss_img)
-        return images
+def generate_screenshots(input_file, output_dir, duration, no_of_photos):
+    images = []
+    ttl_step = duration // no_of_photos
+    current_ttl = ttl_step
+    for _ in range(no_of_photos):
+        ss_img = screencapture(input_file, output_dir, current_ttl)
+        current_ttl = current_ttl + ttl_step
+        if ss_img is not None:
+            images.append(ss_img)
+    return images

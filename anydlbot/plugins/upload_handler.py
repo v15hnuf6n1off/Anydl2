@@ -117,10 +117,11 @@ async def upload_worker(update, filename, send_as, generatess, download_director
             LOGGER.info("Did this happen? :\\")
         end_upload = datetime.now()
         time_taken_for_upload = (end_upload - start_upload).seconds
+        min_duration = 300
         media_album_p = []
-        if generatess:
+        if generatess and duration > min_duration:
             images = generate_screenshots(
-                current_file_name, tmp_directory_for_each_user, 300, 5
+                current_file_name, tmp_directory_for_each_user, duration, 5
             )
             LOGGER.info(images)
             i = 0
