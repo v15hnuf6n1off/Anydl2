@@ -60,7 +60,7 @@ async def echo(_, message):
             video_url=url,
             download=False,
             ytdl_opts=info_dict,
-            ie_key="Generic",
+            ie_key=None,
         )
     except youtube_dl.utils.DownloadError as ytdl_error:
         await message.reply_text(text=str(ytdl_error), quote=True)
