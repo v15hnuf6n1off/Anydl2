@@ -117,6 +117,12 @@ async def youtube_dl_call_back(_, update):
                 "postprocessors": [{"key": "FFmpegMetadata"}],
             }
         )
+    elif send_as == "file":
+        ytdl_opts.update(
+            {
+                "format": format_id,
+            }
+        )
 
     start_download = datetime.now()
     try:
@@ -137,7 +143,9 @@ async def youtube_dl_call_back(_, update):
             caption=f"Download took {time_taken_for_download} seconds.\n"
             + String.UPLOAD_START
         )
-        upl = await upload_worker(update, info.get("title", ""), send_as, True, download_directory)
+        upl = await upload_worker(
+            update, info.get("title", ""), send_as, True, download_directory
+        )
         LOGGER.info(upl)
         shutil.rmtree(tmp_directory_for_each_user, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")
