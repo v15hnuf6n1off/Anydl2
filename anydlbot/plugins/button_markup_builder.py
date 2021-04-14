@@ -128,6 +128,17 @@ async def echo(_, message):
                         "MP3 (320 kbps)", callback_data=f"audio|{extractor_key}|320|mp3"
                     )
                 )
+        elif "entries" in info:
+            for entries in info.get("entries"):
+                for formats in entries.get("formats"):
+                    format_id = formats.get("format_id")
+                    format_ext = formats.get("ext")
+                    cb_string_file = f"file={extractor_key}={format_id}={format_ext}"
+                    ikeyboard.row(
+                        InlineKeyboardButton(
+                            f"File [{format_ext.upper()}]", callback_data=cb_string_file
+                        ),
+                    )
         else:
             format_id = info.get("format_id")
             format_ext = info.get("ext")
