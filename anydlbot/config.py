@@ -27,7 +27,7 @@ class Config:
     API_HASH = os.environ.get("API_HASH")
     BOT_TOKEN = os.environ.get("BOT_TOKEN")
 
-    WORK_DIR = os.environ.get("WORK_DIR", "./DOWNLOADS/")
+    WORK_DIR = os.environ.get("WORK_DIR", os.path.join(os.getcwd(), "DOWNLOADS"))
 
     USER_IDS = {os.environ.get("USER_IDS", 0)}
     if os.environ.get("USER_IDS"):
