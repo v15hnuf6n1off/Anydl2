@@ -18,25 +18,25 @@ import os
 import time
 from datetime import datetime
 
-from hachoir.metadata import extractMetadata
-from hachoir.parser import createParser
-from PIL import Image
+import magic
 from pyrogram.types import InputMediaPhoto
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes, progress_for_pyrogram
 from anydlbot.helper_funcs.ffmpeg_helper import generate_screenshots
+from anydlbot.helper_funcs.metadata import width_and_height, media_duration
 from strings import String
 
 
-async def upload_worker(update, filename, send_as, generatess, download_directory):
+async def upload_worker(update, filename, download_directory):
     tmp_directory_for_each_user = os.path.join(
         Config.WORK_DIR, str(update.from_user.id)
     )
     thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
     download_directory_dirname = os.path.dirname(download_directory)
     download_directory_contents = os.listdir(download_directory_dirname)
+    LOGGER.info(download_directory_contents)
     for download_directory_c in download_directory_contents:
         current_file_name = os.path.join(
             download_directory_dirname, download_directory_c
@@ -52,53 +52,29 @@ async def upload_worker(update, filename, send_as, generatess, download_director
         # get the correct width, height, and duration
         # for videos greater than 10MB
         # ref: message from @BotSupport
-        width = 0
-        height = 0
-        duration = 0
-        if send_as != "file":
-            metadata = extractMetadata(createParser(current_file_name))
-            if metadata is not None and metadata.has("duration"):
-                duration = metadata.get("duration").seconds
-        # get the correct width, height, and duration
-        # for videos greater than 10MB
+        width = height = duration = 0
         if os.path.exists(thumb_image_path):
-            # https://stackoverflow.com/a/21669827/4723940
-            Image.open(thumb_image_path).convert("RGB").save(thumb_image_path)
-            metadata = extractMetadata(createParser(thumb_image_path))
-            if metadata.has("width"):
-                width = metadata.get("width")
-            if metadata.has("height"):
-                height = metadata.get("height")
+            width, height = width_and_height(thumb_image_path)
         else:
             thumb_image_path = None
+
+        mime_type = magic.from_file(filename=current_file_name, mime=True)
         start_upload = datetime.now()
         c_time = time.time()
-        if send_as == "audio":
+        if mime_type.startswith("audio"):
+            duration = media_duration(current_file_name)
             await update.message.reply_audio(
                 audio=current_file_name,
                 caption=filename,
                 parse_mode="HTML",
                 duration=duration,
-                # performer=response_json["uploader"],
-                # title=response_json["title"],
-                # reply_markup=reply_markup,
                 thumb=thumb_image_path,
                 progress=progress_for_pyrogram,
                 progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
-        elif send_as == "file":
-            await update.message.reply_document(
-                document=current_file_name,
-                thumb=thumb_image_path,
-                caption=filename,
-                parse_mode="HTML",
-                # reply_markup=reply_markup,
-                progress=progress_for_pyrogram,
-                progress_args=(String.UPLOAD_START, update.message, c_time),
-            )
-
-        elif send_as == "video":
+        elif mime_type.startswith("video"):
+            duration = media_duration(current_file_name)
             await update.message.reply_video(
                 video=current_file_name,
                 caption=filename,
@@ -107,19 +83,26 @@ async def upload_worker(update, filename, send_as, generatess, download_director
                 width=width,
                 height=height,
                 supports_streaming=True,
-                # reply_markup=reply_markup,
                 thumb=thumb_image_path,
                 progress=progress_for_pyrogram,
                 progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
         else:
-            LOGGER.info("Did this happen? :\\")
+            await update.message.reply_document(
+                document=current_file_name,
+                thumb=thumb_image_path,
+                caption=filename,
+                parse_mode="HTML",
+                progress=progress_for_pyrogram,
+                progress_args=(String.UPLOAD_START, update.message, c_time),
+            )
+
         end_upload = datetime.now()
         time_taken_for_upload = (end_upload - start_upload).seconds
         min_duration = 300
         media_album_p = []
-        if generatess and duration > min_duration:
+        if mime_type.startswith("video") and duration > min_duration:
             images = generate_screenshots(
                 current_file_name, tmp_directory_for_each_user, duration, 5
             )

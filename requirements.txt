@@ -7,3 +7,4 @@ tgcrypto
 youtube-dl
 pykeyboard
 ffmpeg-python
+python-magic
