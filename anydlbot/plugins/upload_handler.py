@@ -26,7 +26,7 @@ from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes, progress_for_pyrogram
 from anydlbot.helper_funcs.ffmpeg_helper import generate_screenshots
-from anydlbot.helper_funcs.metadata import width_and_height, media_duration
+from anydlbot.helper_funcs.metadata import width_and_height, media_duration, resize_thumbnail
 from strings import String
 
 
@@ -53,6 +53,7 @@ async def upload_worker(update, filename, download_directory):
         width = height = duration = 0
         if os.path.exists(thumb_image_path):
             width, height = width_and_height(thumb_image_path)
+            resize_thumbnail(thumb_image_path)
         else:
             thumb_image_path = None
 

@@ -16,6 +16,7 @@
 
 from hachoir.metadata import extractMetadata
 from hachoir.parser import createParser
+from PIL import Image
 
 
 def width_and_height(thumbnail_path):
@@ -26,3 +27,17 @@ def width_and_height(thumbnail_path):
 def media_duration(media_path):
     metadata = extractMetadata(createParser(media_path))
     return metadata.get("duration").seconds
+
+
+# @SpEcHiDe/PublicLeech/torrent-leecher/tobrot/helper_funcs/upload_to_tg.py#L150-L164
+def resize_thumbnail(thumbnail_path):
+    width, height = width_and_height(thumbnail_path)
+    # resize image
+    # ref: https://t.me/PyrogramChat/44663
+    # https://stackoverflow.com/a/21669827/4723940
+    Image.open(thumbnail_path).convert("RGB").save(thumbnail_path)
+    img = Image.open(thumbnail_path)
+    # https://stackoverflow.com/a/37631799/4723940
+    img.resize((320, height))
+    img.save(thumbnail_path, "JPEG")
+    # https://pillow.readthedocs.io/en/3.1.x/reference/Image.html#create-thumbnails
