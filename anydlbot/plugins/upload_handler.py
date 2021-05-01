@@ -17,6 +17,7 @@
 import os
 import time
 from datetime import datetime
+from tempfile import TemporaryDirectory
 
 import magic
 from pyrogram.types import InputMediaPhoto
@@ -30,9 +31,6 @@ from strings import String
 
 
 async def upload_worker(update, filename, download_directory):
-    tmp_directory_for_each_user = os.path.join(
-        Config.WORK_DIR, str(update.from_user.id)
-    )
     thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
     download_directory_dirname = os.path.dirname(download_directory)
     download_directory_contents = os.listdir(download_directory_dirname)
@@ -100,28 +98,29 @@ async def upload_worker(update, filename, download_directory):
 
         end_upload = datetime.now()
         time_taken_for_upload = (end_upload - start_upload).seconds
-        min_duration = 300
-        media_album_p = []
-        if mime_type.startswith("video") and duration > min_duration:
-            images = generate_screenshots(
-                current_file_name, tmp_directory_for_each_user, duration, 5
-            )
-            LOGGER.info(images)
-            i = 0
-            caption = f"© @AnyDLBot - Uploaded in {time_taken_for_upload} seconds"
-            for image in images:
-                if os.path.exists(image):
-                    if i == 0:
-                        media_album_p.append(
-                            InputMediaPhoto(
-                                media=image, caption=caption, parse_mode="html"
+        with TemporaryDirectory(
+            prefix="screenshots", dir=download_directory_dirname
+        ) as tempdir:
+            min_duration = 300
+            media_album_p = []
+            if mime_type.startswith("video") and duration > min_duration:
+                images = generate_screenshots(current_file_name, tempdir, duration, 5)
+                LOGGER.info(images)
+                i = 0
+                caption = f"© @AnyDLBot - Uploaded in {time_taken_for_upload} seconds"
+                for image in images:
+                    if os.path.exists(image):
+                        if i == 0:
+                            media_album_p.append(
+                                InputMediaPhoto(
+                                    media=image, caption=caption, parse_mode="html"
+                                )
                             )
-                        )
-                    else:
-                        media_album_p.append(InputMediaPhoto(media=image))
-                    i += 1
-        await update.message.reply_media_group(
-            media=media_album_p, disable_notification=True
-        )
+                        else:
+                            media_album_p.append(InputMediaPhoto(media=image))
+                        i += 1
+            await update.message.reply_media_group(
+                media=media_album_p, disable_notification=True
+            )
         #
         return True

@@ -15,9 +15,10 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
+import shutil
 import time
 from datetime import datetime
-
+from tempfile import mkdtemp
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
@@ -55,7 +56,9 @@ async def direct_dl_callback(bot, update):
     )
     if not os.path.isdir(tmp_directory_for_each_user):
         os.makedirs(tmp_directory_for_each_user)
-    download_directory = os.path.join(tmp_directory_for_each_user, custom_file_name)
+    download_directory = os.path.join(
+        mkdtemp(dir=tmp_directory_for_each_user), custom_file_name
+    )
 
     c_time = time.time()
     try:
@@ -83,11 +86,9 @@ async def direct_dl_callback(bot, update):
         except:
             return False
 
-        try:
-            os.remove(download_directory)
-            os.remove(thumb_image_path)
-        except:
-            pass
+        shutil.rmtree(download_directory, ignore_errors=True)
+        LOGGER.info("Cleared temporary folder")
+        os.remove(thumb_image_path)
         await update.message.delete()
 
     else:

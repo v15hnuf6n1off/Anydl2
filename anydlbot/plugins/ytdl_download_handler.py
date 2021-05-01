@@ -20,6 +20,7 @@ from datetime import datetime
 import asyncio
 import functools
 from concurrent.futures import ThreadPoolExecutor
+from tempfile import mkdtemp
 
 import youtube_dl
 
@@ -70,7 +71,9 @@ async def youtube_dl_call_back(_, update):
     )
     if not os.path.isdir(tmp_directory_for_each_user):
         os.makedirs(tmp_directory_for_each_user)
-    download_directory = os.path.join(tmp_directory_for_each_user, custom_file_name)
+    download_directory = os.path.join(
+        mkdtemp(dir=tmp_directory_for_each_user), custom_file_name
+    )
     ytdl_opts = {
         "outtmpl": download_directory,
         "ignoreerrors": True,
@@ -145,7 +148,7 @@ async def youtube_dl_call_back(_, update):
         )
         upl = await upload_worker(update, info.get("title", ""), download_directory)
         LOGGER.info(upl)
-        shutil.rmtree(tmp_directory_for_each_user, ignore_errors=True)
+        shutil.rmtree(download_directory, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")
         os.remove(thumb_image_path)
 
