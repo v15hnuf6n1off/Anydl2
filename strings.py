@@ -2,7 +2,7 @@ class String:
     START_TEXT = """This is an @AnyDLBot clone created using the Open Source code available.
 Source Code: https://github.com/SpEcHiDe/AnyDLBot
 © @AnyDLBot"""
-    FORMAT_SELECTION = "Select the desired format: <a href='{}'>file size might be approximate</a> \nIf you want to set custom thumbnail, send photo before or quickly after tapping on any of the below buttons.\nYou can use /deletethumbnail to delete the auto-generated thumbnail."
+    FORMAT_SELECTION = "Select the desired format: <u>file size might be approximate</u> \nIf you want to set custom thumbnail, send photo before or quickly after tapping on any of the below buttons.\nYou can use /deletethumbnail to delete the auto-generated thumbnail."
     SET_CUSTOM_USERNAME_PASSWORD = """If you want to download premium videos, provide in the following format:
 URL | filename | username | password"""
     DOWNLOAD_START = "trying to download"
@@ -10,7 +10,9 @@ URL | filename | username | password"""
     RCHD_TG_API_LIMIT = "Downloaded in {} seconds.\nDetected File Size: {}\nSorry. But, I cannot upload files greater than 1.5GB due to Telegram API limitations."
     AFTER_SUCCESSFUL_UPLOAD_MSG_WITH_TS = "Downloaded in {} seconds. \nPlease rate me if you find me useful. https://t.me/tlgrmcbot?start=anydl_bot-bot \nUploaded in {} seconds."
     SAVED_CUSTOM_THUMBNAIL = "Custom video / file thumbnail saved. This image will be used in the video / file."
+    FAILED_SAVE_CUSTOM_THUMBNAIL = "Failed to save this custom thumbnail."
     DELETED_CUSTOM_THUMB_NAIL = "✅ Custom thumbnail cleared succesfully."
+    FAILED_DELETE_CUSTOM_THUMB_NAIL = "Failed to remove thumbnail, cause I couldn't find one."
     CUSTOM_CAPTION_UL_FILE = " "
     NO_CUSTOM_THUMB_NAIL_FOUND = "No Custom ThumbNail found."
     NO_VOID_FORMAT_FOUND = "no-one gonna help you\n<b>YouTubeDL</b> said: {}"

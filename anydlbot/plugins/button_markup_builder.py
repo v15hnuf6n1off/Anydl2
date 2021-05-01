@@ -14,7 +14,6 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
 import re
 
 import youtube_dl
@@ -27,7 +26,6 @@ from anydlbot.bot import AnyDLBot
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes
 from anydlbot.helper_funcs.extract_link import get_link
-from anydlbot.helper_funcs.aiohttp_helper import get_thumbnail
 from anydlbot.plugins.ytdl_download_handler import yt_extract_info
 from strings import String
 
@@ -63,15 +61,11 @@ async def echo(_, message):
             ie_key=None,
         )
     except youtube_dl.utils.DownloadError as ytdl_error:
-        await message.reply_text(text=str(ytdl_error), quote=True)
+        await message.reply_text(text=ytdl_error, quote=True)
         return False
 
+    ikeyboard = InlineKeyboard()
     if info:
-        ikeyboard = InlineKeyboard()
-
-        thumb_image = info.get("thumbnail", None)
-        thumbnail = thumb_image or Config.DEFAULT_THUMBNAIL
-
         extractor_key = info.get("extractor_key", "Generic")
         duration = info.get("duration", None)
         if "formats" in info:
@@ -136,7 +130,8 @@ async def echo(_, message):
                     cb_string_file = f"file|{extractor_key}|{format_id}|{format_ext}"
                     ikeyboard.row(
                         InlineKeyboardButton(
-                            f"YTDL Generic File [{format_ext.upper()}]", callback_data=cb_string_file
+                            f"YTDL Generic File [{format_ext.upper()}]",
+                            callback_data=cb_string_file,
                         ),
                     )
         else:
@@ -148,38 +143,17 @@ async def echo(_, message):
                     f"File [{format_ext.upper()}]", callback_data=cb_string_file
                 ),
             )
-
-        save_thumbnail = os.path.join(
-            Config.WORK_DIR, str(message.from_user.id) + ".jpg"
-        )
-        if not os.path.isdir(Config.WORK_DIR):
-            os.makedirs(Config.WORK_DIR)
-
-        if os.path.exists(save_thumbnail):
-            thumb_image_path = save_thumbnail
-        else:
-            thumb_image_path = await get_thumbnail(thumbnail, save_thumbnail)
-        await message.reply_photo(
-            photo=thumb_image_path,
-            quote=True,
-            caption=String.FORMAT_SELECTION.format(thumbnail)
-            + "\n"
-            + String.SET_CUSTOM_USERNAME_PASSWORD,
-            reply_markup=ikeyboard,
-            parse_mode="html",
-        )
     else:
         # fallback for nonnumeric port a.k.a seedbox.io
-        ikeyboard = InlineKeyboard()
         cb_string_file = "file=LFO=NONE=NONE"
         ikeyboard.row(
             InlineKeyboardButton("File", callback_data=cb_string_file),
         )
-        await message.reply_photo(
-            photo=Config.DEFAULT_THUMBNAIL,
-            quote=True,
-            caption=String.FORMAT_SELECTION.format(""),
-            reply_markup=ikeyboard,
-            parse_mode="html",
-            reply_to_message_id=message.message_id,
-        )
+
+    await message.reply_text(
+        text=String.FORMAT_SELECTION.format("")
+        + "\n"
+        + String.SET_CUSTOM_USERNAME_PASSWORD,
+        quote=True,
+        reply_markup=ikeyboard,
+    )

@@ -28,13 +28,11 @@ from anydlbot.plugins.upload_handler import upload_worker
 from strings import String
 
 
-async def direct_dl_callback(bot, update):
+async def direct_dl_callback(_, update):
     cb_data = update.data
     LOGGER.info(cb_data)
     # youtube_dl extractors
     send_as, _, __, ___ = cb_data.split("=")
-    thumb_image_path = Config.WORK_DIR + "/" + str(update.from_user.id) + ".jpg"
-
     (
         url,
         custom_file_name,
@@ -44,13 +42,8 @@ async def direct_dl_callback(bot, update):
     if not custom_file_name:
         custom_file_name = os.path.basename(url)
 
-    description = String.CUSTOM_CAPTION_UL_FILE
     start_download = datetime.now()
-    await bot.edit_message_text(
-        text=String.DOWNLOAD_START,
-        chat_id=update.message.chat.id,
-        message_id=update.message.message_id,
-    )
+    await update.message.edit_text(text=String.DOWNLOAD_START)
     tmp_directory_for_each_user = os.path.join(
         Config.WORK_DIR, str(update.from_user.id)
     )
@@ -74,27 +67,22 @@ async def direct_dl_callback(bot, update):
     if os.path.exists(download_directory):
         end_download = datetime.now()
         time_taken_for_download = (end_download - start_download).seconds
-        await bot.edit_message_text(
+        await update.message.edit_text(
             text=f"Download took {time_taken_for_download} seconds.\n"
-            + String.UPLOAD_START,
-            chat_id=update.message.chat.id,
-            message_id=update.message.message_id,
+            + String.UPLOAD_START
         )
         try:
-            upl = await upload_worker(update, custom_file_name, download_directory)
+            upl = await upload_worker(
+                update, custom_file_name, None, download_directory
+            )
             LOGGER.info(upl)
         except:
             return False
 
         shutil.rmtree(download_directory, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")
-        os.remove(thumb_image_path)
         await update.message.delete()
-
     else:
-        await bot.edit_message_text(
+        await update.message.edit_text(
             text=String.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),
-            chat_id=update.message.chat.id,
-            message_id=update.message.message_id,
-            disable_web_page_preview=True,
         )

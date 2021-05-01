@@ -54,7 +54,6 @@ async def youtube_dl_call_back(_, update):
     LOGGER.info(cb_data)
     # youtube_dl extractors
     send_as, extractor_key, format_id, av_codec = cb_data.split("|")
-    thumb_image_path = os.path.join(Config.WORK_DIR, str(update.from_user.id) + ".jpg")
 
     (
         youtube_dl_url,
@@ -64,7 +63,7 @@ async def youtube_dl_call_back(_, update):
     ) = get_link(update.message.reply_to_message)
     if not custom_file_name:
         custom_file_name = "%(title)s.%(ext)s"
-    await update.message.edit_caption(caption=String.DOWNLOAD_START)
+    await update.message.edit_text(text=String.DOWNLOAD_START)
     # description = Translation.CUSTOM_CAPTION_UL_FILE
     tmp_directory_for_each_user = os.path.join(
         Config.WORK_DIR, str(update.from_user.id)
@@ -136,20 +135,21 @@ async def youtube_dl_call_back(_, update):
             ie_key=extractor_key,
         )
     except youtube_dl.utils.DownloadError as ytdl_error:
-        await update.message.edit_caption(caption=str(ytdl_error))
+        await update.message.edit_text(text=ytdl_error)
         return False
 
     if info:
         end_download = datetime.now()
         time_taken_for_download = (end_download - start_download).seconds
-        await update.message.edit_caption(
-            caption=f"Download took {time_taken_for_download} seconds.\n"
+        await update.message.edit_text(
+            text=f"Download took {time_taken_for_download} seconds.\n"
             + String.UPLOAD_START
         )
-        upl = await upload_worker(update, info.get("title", ""), download_directory)
+        upl = await upload_worker(
+            update, info.get("title", ""), info.get("thumbnail"), download_directory
+        )
         LOGGER.info(upl)
         shutil.rmtree(download_directory, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")
-        os.remove(thumb_image_path)
 
         await update.message.delete()
