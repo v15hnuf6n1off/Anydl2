@@ -16,11 +16,13 @@
 
 import os
 import time
+import asyncio
 from datetime import datetime
 from tempfile import TemporaryDirectory
 
 import magic
 from pyrogram.types import InputMediaPhoto
+from pyrogram.errors import FloodWait
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
@@ -130,8 +132,11 @@ async def upload_worker(update, filename, thumbnail, download_directory):
                         else:
                             media_album_p.append(InputMediaPhoto(media=image))
                         i += 1
-            await update.message.reply_media_group(
-                media=media_album_p, disable_notification=True
-            )
+                try:
+                    await update.message.reply_media_group(
+                        media=media_album_p, disable_notification=True
+                    )
+                except FloodWait as e:
+                    await asyncio.sleep(e.x)
         #
         return True
