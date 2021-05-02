@@ -15,10 +15,13 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import time
+from datetime import timedelta
 
 import ffmpeg
+from pyrogram.types import InputMediaPhoto
 
 from anydlbot import LOGGER
+from strings import String
 
 
 # https://github.com/kkroening/ffmpeg-python/blob/master/examples/get_video_thumbnail.py
@@ -44,7 +47,16 @@ def generate_screenshots(input_file, output_dir, duration, no_of_photos):
     current_ttl = ttl_step
     for _ in range(no_of_photos):
         ss_img = screencapture(input_file, output_dir, current_ttl)
-        current_ttl = current_ttl + ttl_step
         if ss_img is not None:
-            images.append(ss_img)
+            # Caption showing frame time taken from
+            # @odysseusmax/animated-lamp/bot/processes/screenshot.py#L143
+            images.append(
+                InputMediaPhoto(
+                    media=ss_img,
+                    caption=String.SCREENSHOT_TAKEN.format(
+                        timedelta(seconds=current_ttl)
+                    ),
+                )
+            )
+        current_ttl = current_ttl + ttl_step
     return images

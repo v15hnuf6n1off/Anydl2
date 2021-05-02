@@ -15,6 +15,8 @@ URL | filename | username | password"""
     FAILED_DELETE_CUSTOM_THUMB_NAIL = "Failed to remove thumbnail, cause I couldn't find one."
     CUSTOM_CAPTION_UL_FILE = " "
     NO_CUSTOM_THUMB_NAIL_FOUND = "No Custom ThumbNail found."
+    FINISHED_UPLOAD = "Uploaded in {} seconds"
+    SCREENSHOT_TAKEN = "Screenshot taken at <u>{}</u>"
     NO_VOID_FORMAT_FOUND = "no-one gonna help you\n<b>YouTubeDL</b> said: {}"
     HELP_USER = """There are multiple things I can do:
 👉 <a href="https://t.me/SpEcHlDe/608">All Supported Video / File Formats, with custom file name and custom thumbnail support</a>

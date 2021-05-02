@@ -17,11 +17,11 @@
 import os
 import time
 import asyncio
-from datetime import datetime
+
+# from datetime import datetime
 from tempfile import TemporaryDirectory
 
 import magic
-from pyrogram.types import InputMediaPhoto
 from pyrogram.errors import FloodWait
 
 from anydlbot import LOGGER
@@ -62,7 +62,7 @@ async def upload_worker(update, filename, thumbnail, download_directory):
             )
 
         mime_type = magic.from_file(filename=current_file_name, mime=True)
-        start_upload = datetime.now()
+        # start_upload = datetime.now()
         c_time = time.time()
         width = height = duration = 0
         if mime_type.startswith("audio"):
@@ -109,29 +109,17 @@ async def upload_worker(update, filename, thumbnail, download_directory):
                 progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
-        end_upload = datetime.now()
-        time_taken_for_upload = (end_upload - start_upload).seconds
+        # end_upload = datetime.now()
+        # time_taken_for_upload = (end_upload - start_upload).seconds
         with TemporaryDirectory(
             prefix="screenshots", dir=download_directory_dirname
         ) as tempdir:
             min_duration = 300
-            media_album_p = []
             if mime_type.startswith("video") and duration > min_duration:
-                images = generate_screenshots(current_file_name, tempdir, duration, 5)
-                LOGGER.info(images)
-                i = 0
-                caption = f"© @AnyDLBot - Uploaded in {time_taken_for_upload} seconds"
-                for image in images:
-                    if os.path.exists(image):
-                        if i == 0:
-                            media_album_p.append(
-                                InputMediaPhoto(
-                                    media=image, caption=caption, parse_mode="html"
-                                )
-                            )
-                        else:
-                            media_album_p.append(InputMediaPhoto(media=image))
-                        i += 1
+                media_album_p = generate_screenshots(
+                    current_file_name, tempdir, duration, 5
+                )
+                # LOGGER.info(media_album_p)
                 try:
                     await update.message.reply_media_group(
                         media=media_album_p, disable_notification=True
