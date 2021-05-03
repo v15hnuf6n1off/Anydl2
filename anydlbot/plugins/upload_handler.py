@@ -114,8 +114,7 @@ async def upload_worker(update, filename, thumbnail, download_directory):
         with TemporaryDirectory(
             prefix="screenshots", dir=download_directory_dirname
         ) as tempdir:
-            min_duration = 300
-            if mime_type.startswith("video") and duration > min_duration:
+            if mime_type.startswith("video") and duration > Config.MIN_DURATION:
                 media_album_p = generate_screenshots(
                     current_file_name, tempdir, duration, 5
                 )

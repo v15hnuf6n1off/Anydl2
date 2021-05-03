@@ -39,6 +39,7 @@ class Config:
     PROCESS_MAX_TIMEOUT = int(os.environ.get("PROCESS_MAX_TIMEOUT", 3600))
     # DEFAULT_THUMBNAIL = os.environ.get("DEF_THUMB_NAIL_VID_S", "https://via.placeholder.com/320x320.jpg")
     MAX_MESSAGE_LENGTH = int(os.environ.get("MAX_MESSAGE_LENGTH", 4096))
+    MIN_DURATION = int(os.environ.get("MIN_DURATION", 900))
 
     FINISHED_PROGRESS_BLOCK = os.environ.get("FINISHED_PROGRESS_BLOCK", "█")
     UNFINISHED_PROGRESS_BLOCK = os.environ.get("UNFINISHED_PROGRESS_BLOCK", "░")
