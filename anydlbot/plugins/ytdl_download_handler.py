@@ -14,12 +14,12 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import os
-import shutil
-from datetime import datetime
 import asyncio
 import functools
+import os
+import shutil
 from concurrent.futures import ThreadPoolExecutor
+from datetime import datetime
 from tempfile import mkdtemp
 
 import youtube_dl

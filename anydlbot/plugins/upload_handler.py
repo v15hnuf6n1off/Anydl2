@@ -14,9 +14,9 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
 import os
 import time
-import asyncio
 
 # from datetime import datetime
 from tempfile import TemporaryDirectory
@@ -28,8 +28,8 @@ from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.aiohttp_helper import get_thumbnail
 from anydlbot.helper_funcs.display_progress import humanbytes, progress_for_pyrogram
-from anydlbot.helper_funcs.ffmpeg_helper import screencapture, generate_screenshots
-from anydlbot.helper_funcs.metadata import width_and_height, media_duration
+from anydlbot.helper_funcs.ffmpeg_helper import generate_screenshots, screencapture
+from anydlbot.helper_funcs.metadata import media_duration, width_and_height
 from strings import String
 
 

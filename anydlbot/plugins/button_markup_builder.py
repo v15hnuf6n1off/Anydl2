@@ -17,9 +17,9 @@
 import re
 
 import youtube_dl
+from pykeyboard import InlineKeyboard
 from pyrogram import filters
 from pyrogram.types import InlineKeyboardButton
-from pykeyboard import InlineKeyboard
 
 from anydlbot import LOGGER
 from anydlbot.bot import AnyDLBot
