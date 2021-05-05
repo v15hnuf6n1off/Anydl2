@@ -18,7 +18,7 @@ import asyncio
 import math
 import time
 
-from pyrogram.errors import FloodWait
+from pyrogram.errors import FloodWait, MessageNotModified
 
 from anydlbot.config import Config
 
@@ -55,6 +55,8 @@ async def progress_for_pyrogram(current, total, status_text, message, start):
         )
         try:
             await message.edit_text(f"{status_text}\n {progress_text}")
+        except MessageNotModified:
+            pass
         except FloodWait as e:
             await asyncio.sleep(e.x)
 

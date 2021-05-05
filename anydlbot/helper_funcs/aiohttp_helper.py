@@ -19,7 +19,7 @@ import time
 
 import aiohttp
 from PIL import Image
-from pyrogram.errors import FloodWait
+from pyrogram.errors import FloodWait, MessageNotModified
 
 from anydlbot import LOGGER
 from anydlbot.config import Config
@@ -63,6 +63,8 @@ async def direct_downloader(url, file_name, message, start):
                             if current_message != display_message:
                                 await message.edit_text(text=current_message)
                                 display_message = current_message
+                        except MessageNotModified:
+                            pass
                         except FloodWait as e:
                             await asyncio.sleep(e.x)
                         except Exception as e:
