@@ -33,7 +33,7 @@ async def sticker_downloader(_, message):
     LOGGER.info(message.from_user)
     sticker = message.sticker
     pack_name = sticker.set_name
-    pack_link = f"http://t.me/addstickers/{pack_name}"
+    pack_link = f"http://t.me/addstickers/{pack_name}" if pack_name else ""
     sticker_ext = PurePath(message.sticker.file_name).suffix
     zipfile_name = f"{str(message.from_user.id)}_{pack_name}{sticker_ext}.zip"
 
