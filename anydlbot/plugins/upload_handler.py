@@ -18,7 +18,7 @@ import asyncio
 import os
 import time
 
-# from datetime import datetime
+from datetime import datetime
 from tempfile import TemporaryDirectory
 
 import magic
@@ -33,7 +33,7 @@ from anydlbot.helper_funcs.metadata import media_duration, width_and_height
 from strings import String
 
 
-async def upload_worker(update, filename, thumbnail, download_directory):
+async def upload_worker(update, filename, thumbnail, download_directory, downloaded_in):
     download_directory_dirname = os.path.dirname(download_directory)
     download_directory_contents = os.listdir(download_directory_dirname)
     LOGGER.info(download_directory_contents)
@@ -62,7 +62,7 @@ async def upload_worker(update, filename, thumbnail, download_directory):
             )
 
         mime_type = magic.from_file(filename=current_file_name, mime=True)
-        # start_upload = datetime.now()
+        start_upload = datetime.now()
         c_time = time.time()
         width = height = duration = 0
         if mime_type.startswith("audio"):
@@ -109,8 +109,8 @@ async def upload_worker(update, filename, thumbnail, download_directory):
                 progress_args=(String.UPLOAD_START, update.message, c_time),
             )
 
-        # end_upload = datetime.now()
-        # time_taken_for_upload = (end_upload - start_upload).seconds
+        end_upload = datetime.now()
+        uploaded_in = (end_upload - start_upload).seconds
         with TemporaryDirectory(
             prefix="screenshots", dir=download_directory_dirname
         ) as tempdir:
@@ -126,4 +126,11 @@ async def upload_worker(update, filename, thumbnail, download_directory):
                 except FloodWait as e:
                     await asyncio.sleep(e.x)
         #
+        first_name = f"{update.from_user.first_name}"
+        user_link = f"tg://user?id={update.from_user.id}"
+        await update.message.edit_text(
+            text=String.FINAL_STATUS.format(
+                user_link, first_name, downloaded_in, uploaded_in
+            )
+        )
         return True

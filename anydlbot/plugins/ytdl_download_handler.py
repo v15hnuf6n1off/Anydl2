@@ -140,16 +140,22 @@ async def youtube_dl_call_back(_, update):
 
     if info:
         end_download = datetime.now()
-        time_taken_for_download = (end_download - start_download).seconds
+        downloaded_in = (end_download - start_download).seconds
         await update.message.edit_text(
-            text=f"Download took {time_taken_for_download} seconds.\n"
-            + String.UPLOAD_START
+            text=f"Download took {downloaded_in} seconds.\n" + String.UPLOAD_START
         )
         upl = await upload_worker(
-            update, info.get("title", ""), info.get("thumbnail"), download_directory
+            update,
+            info.get("title", ""),
+            info.get("thumbnail"),
+            download_directory,
+            downloaded_in,
         )
         LOGGER.info(upl)
         shutil.rmtree(download_directory, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")
 
-        await update.message.delete()
+        # await update.message.delete()
+    else:
+        await update.message.edit_text(text="Failed Task")
+        return

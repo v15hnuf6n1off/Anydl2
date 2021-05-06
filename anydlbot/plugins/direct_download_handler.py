@@ -68,14 +68,13 @@ async def direct_dl_callback(_, update):
 
     if os.path.exists(download_directory):
         end_download = datetime.now()
-        time_taken_for_download = (end_download - start_download).seconds
+        downloaded_in = (end_download - start_download).seconds
         await update.message.edit_text(
-            text=f"Download took {time_taken_for_download} seconds.\n"
-            + String.UPLOAD_START
+            text=f"Download took {downloaded_in} seconds.\n" + String.UPLOAD_START
         )
         try:
             upl = await upload_worker(
-                update, custom_file_name, None, download_directory
+                update, custom_file_name, None, download_directory, downloaded_in
             )
             LOGGER.info(upl)
         except:
@@ -83,7 +82,7 @@ async def direct_dl_callback(_, update):
 
         shutil.rmtree(download_directory, ignore_errors=True)
         LOGGER.info("Cleared temporary folder")
-        await update.message.delete()
+        # await update.message.delete()
     else:
         await update.message.edit_text(
             text=String.NO_VOID_FORMAT_FOUND.format("Incorrect Link"),

@@ -18,6 +18,7 @@ URL | filename | username | password"""
     FINISHED_UPLOAD = "Uploaded in {} seconds"
     SCREENSHOT_TAKEN = "Screenshot taken at <u>{}</u>"
     NO_VOID_FORMAT_FOUND = "no-one gonna help you\n<b>YouTubeDL</b> said: {}"
+    FINAL_STATUS = "<u>Finished Task</u> \nUser: <a href='{}'>{}</a> \nDownloaded in {} seconds. \nUploaded in {} seconds."
     HELP_USER = """There are multiple things I can do:
 👉 <a href="https://t.me/SpEcHlDe/608">All Supported Video / File Formats, with custom file name and custom thumbnail support</a>
 👉 <a href="https://t.me/SpEcHlDe/609">Upload as file from any HTTP link, with custom thumbnail support</a>
