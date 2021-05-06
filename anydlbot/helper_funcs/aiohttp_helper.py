@@ -17,6 +17,7 @@
 import asyncio
 import time
 
+import aiofiles
 import aiohttp
 from PIL import Image
 from pyrogram.errors import FloodWait, MessageNotModified
@@ -73,13 +74,14 @@ async def direct_downloader(url, file_name, message, start):
 
 
 # https://github.com/SpEcHiDe/PublicLeech/blob/master/tobrot/helper_funcs/fix_tcerrocni_images.py
+# https://github.com/Tinche/aiofiles
 async def get_thumbnail(image_url: str, output_filepath: str) -> str:
     async with aiohttp.ClientSession() as session:
         image_url = await session.get(image_url)
         image_content = await image_url.read()
 
-        with open(output_filepath, "wb") as f_d:
-            f_d.write(image_content)
+        async with aiofiles.open(output_filepath, "wb") as f_d:
+            await f_d.write(image_content)
     # image might be downloaded in the previous step
     # https://stackoverflow.com/a/21669827/4723940
     Image.open(output_filepath).convert("RGB").save(output_filepath, "JPEG")
