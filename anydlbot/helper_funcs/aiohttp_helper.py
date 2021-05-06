@@ -26,60 +26,63 @@ from anydlbot import LOGGER
 from anydlbot.config import Config
 from anydlbot.helper_funcs.display_progress import humanbytes, time_formatter
 
+session = aiohttp.ClientSession()
+
 
 async def direct_downloader(url, file_name, message, start):
-    async with aiohttp.ClientSession() as session:
+    async with session.get(url, timeout=Config.PROCESS_MAX_TIMEOUT) as response:
         display_message = ""
-        async with session.get(url, timeout=Config.PROCESS_MAX_TIMEOUT) as response:
-            total_length = int(response.headers["Content-Length"])
-            content_type = response.headers["Content-Type"]
-            if "text" in content_type and total_length < 500:
-                return await response.release()
-            await message.edit_text(
-                text=f"Initiating Download \nURL: {url} \nFile Size: {humanbytes(total_length)}",
-            )
-            with open(file_name, "wb") as f_handle:
-                downloaded = 0
-                while True:
-                    chunk = await response.content.read(Config.CHUNK_SIZE)
-                    if not chunk:
-                        break
-                    f_handle.write(chunk)
-                    downloaded += Config.CHUNK_SIZE
-                    now = time.time()
-                    diff = now - start
-                    if round(diff % 10.00) == 0 or downloaded == total_length:
-                        elapsed_time = round(diff)
-                        if elapsed_time == 0:
-                            return
-                        speed = downloaded / elapsed_time
-                        time_to_completion = round((total_length - downloaded) / speed)
-                        try:
-                            current_message = f"URL: {url}\n"
-                            current_message += (
-                                f"Downloaded {humanbytes(downloaded)} of "
-                                f"{humanbytes(total_length)} at {humanbytes(speed)}\n"
-                                f"ETA: {time_formatter(time_to_completion)}\n"
-                            )
-                            if current_message != display_message:
-                                await message.edit_text(text=current_message)
-                                display_message = current_message
-                        except MessageNotModified:
-                            pass
-                        except FloodWait as e:
-                            await asyncio.sleep(e.x)
-                        except Exception as e:
-                            LOGGER.info(str(e))
+        total_length = int(response.headers["Content-Length"])
+        content_type = response.headers["Content-Type"]
+        if "text" in content_type and total_length < 500:
             return await response.release()
+        initialise_text = (
+            "Initiating Download"
+            f"\nURL: {url}"
+            f"\nContent Type: {content_type}"
+            f"\nFile Size: {humanbytes(total_length)}"
+        )
+        await message.edit_text(text=initialise_text)
+        async with aiofiles.open(file_name, "wb") as f_handle:
+            downloaded = 0
+            while True:
+                chunk = await response.content.read(Config.CHUNK_SIZE)
+                if not chunk:
+                    break
+                await f_handle.write(chunk)
+                downloaded += Config.CHUNK_SIZE
+                now = time.time()
+                diff = now - start
+                if round(diff % 10.00) == 0 or downloaded == total_length:
+                    elapsed_time = round(diff)
+                    if elapsed_time == 0:
+                        return
+                    speed = downloaded / elapsed_time
+                    time_to_completion = round((total_length - downloaded) / speed)
+                    try:
+                        current_message = f"URL: {url}\n"
+                        current_message += (
+                            f"Downloaded {humanbytes(downloaded)} of "
+                            f"{humanbytes(total_length)} at {humanbytes(speed)}\n"
+                            f"ETA: {time_formatter(time_to_completion)}\n"
+                        )
+                        if current_message != display_message:
+                            await message.edit_text(text=current_message)
+                            display_message = current_message
+                    except MessageNotModified:
+                        pass
+                    except FloodWait as e:
+                        await asyncio.sleep(e.x)
+                    except Exception as e:
+                        LOGGER.info(str(e))
+        return await response.release()
 
 
 # https://github.com/SpEcHiDe/PublicLeech/blob/master/tobrot/helper_funcs/fix_tcerrocni_images.py
 # https://github.com/Tinche/aiofiles
 async def get_thumbnail(image_url: str, output_filepath: str) -> str:
-    async with aiohttp.ClientSession() as session:
-        image_url = await session.get(image_url)
-        image_content = await image_url.read()
-
+    async with session.get(image_url) as response:
+        image_content = await response.read()
         async with aiofiles.open(output_filepath, "wb") as f_d:
             await f_d.write(image_content)
     # image might be downloaded in the previous step

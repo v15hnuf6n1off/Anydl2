@@ -14,6 +14,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
+import asyncio
 import os
 import shutil
 import time
@@ -61,7 +62,8 @@ async def direct_dl_callback(_, update):
             update.message,
             c_time,
         )
-    except:
+    except asyncio.TimeoutError:
+        await update.message.edit_text(text=String.SLOW_URL_DECED)
         return False
 
     if os.path.exists(download_directory):

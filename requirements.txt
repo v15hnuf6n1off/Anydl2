@@ -1,4 +1,6 @@
 aiohttp
+cchardet
+aiodns
 aiofiles
 hachoir
 Pillow
