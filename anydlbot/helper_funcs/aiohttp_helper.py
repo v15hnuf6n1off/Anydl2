@@ -45,12 +45,9 @@ async def direct_downloader(url, file_name, message, start):
         await message.edit_text(text=initialise_text)
         async with aiofiles.open(file_name, "wb") as f_handle:
             downloaded = 0
-            while True:
-                chunk = await response.content.read(Config.CHUNK_SIZE)
-                if not chunk:
-                    break
+            async for chunk in response.content.iter_any():
                 await f_handle.write(chunk)
-                downloaded += Config.CHUNK_SIZE
+                downloaded += len(chunk)
                 now = time.time()
                 diff = now - start
                 if round(diff % 10.00) == 0 or downloaded == total_length:
