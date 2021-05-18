@@ -39,7 +39,7 @@ async def echo(_, message):
     LOGGER.info(message.from_user)
     url, _, youtube_dl_username, youtube_dl_password = get_link(message)
 
-    info_dict = {}
+    info_dict = {"noplaylist": True}
     if youtube_dl_username and youtube_dl_password:
         info_dict.update(
             {

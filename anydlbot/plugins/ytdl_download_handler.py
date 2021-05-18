@@ -132,7 +132,7 @@ async def youtube_dl_call_back(_, update):
             video_url=youtube_dl_url,
             download=True,
             ytdl_opts=ytdl_opts,
-            ie_key=extractor_key,
+            ie_key=None,
         )
     except youtube_dl.utils.DownloadError as ytdl_error:
         await update.message.edit_text(text=ytdl_error)
