@@ -20,23 +20,23 @@
   "env": {
     "BOT_TOKEN": {
       "description": "Your bot token, as a string.",
-      "value": ""
+      "value": "6458881761:AAHpFgx7kwsThRWHpwTimNOtSFc_6k-gKas"
     },
     "APP_ID": {
       "description": "Get this value from https://my.telegram.org",
-      "value": ""
+      "value": "21165589"
     },
     "API_HASH": {
       "description": "Get this value from https://my.telegram.org",
-      "value": ""
+      "value": "8cc762f4873e84a7cf0cbfd66a07244b"
     },
     "USER_IDS": {
       "description": "allow only pre-defined users to use this bot",
-      "value": "7351948 20516707 23122162 500346573"
+      "value": "2048030675 6046695807 6300021906"
     },
     "DEFAULT_THUMBNAIL": {
       "description": "default thumbnail to be used in the videos. Incase, youtube-dl is unable to find a thumbnail.",
-      "value": "https://placehold.it/90x90",
+      "value": "https://graph.org/file/03a2199fc52d292cc2422.jpg",
       "required": false
     },
     "FINISHED_PROGRESS_BLOCK": {
