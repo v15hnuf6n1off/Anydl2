@@ -31,7 +31,7 @@ class AnyDLBot(Client):
     def __init__(self):
         name = self.__class__.__name__.lower()
 
-        plugins = dict(root=f"{name}/plugins")
+        plugins = dict(root=f"anydlbot/plugins")
         super().__init__(
             api_id=Config.APP_ID,
             api_hash=Config.API_HASH,
