@@ -33,7 +33,6 @@ class AnyDLBot(Client):
 
         plugins = dict(root=f"{name}/plugins")
         super().__init__(
-            session_name="aydl1",
             api_id=Config.APP_ID,
             api_hash=Config.API_HASH,
             bot_token=Config.BOT_TOKEN,
